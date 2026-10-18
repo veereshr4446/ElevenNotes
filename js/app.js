@@ -16,6 +16,12 @@
     const set = (k, v) => { try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } };
     const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
     const dkey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    // ---------- the student's class (branch + semester) ----------
+    const CLS = get('class', null) || DEFAULT_CLASS;
+    const CLS_BRANCH = BRANCHES.find(b => b.id === CLS.branch) || BRANCHES[0];
+    const CD = CLASS_DATA[CLS_BRANCH.id + '|' + CLS.sem] || null;
+    if (CD) { SUBJECTS = CD.subjects; FACULTY = CD.faculty; TIMETABLE = CD.timetable; EXAMS = CD.exams; }
+    const clsLabel = () => `${CLS_BRANCH.name} · Sem ${CLS.sem}`;
     const SUB = Object.fromEntries(SUBJECTS.map(s => [s.id, s]));
     const DAYS = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -175,7 +181,8 @@
         }).join('');
         const sheet = list.length
             ? `<ul class="classes">${classes}</ul>`
-            : `<div class="empty"><b>No classes today</b>Enjoy the break, or get ahead on your tasks.</div>`;
+            : (Object.keys(TIMETABLE).length ? `<div class="empty"><b>No classes today</b>Enjoy the break, or get ahead on your tasks.</div>`
+                : `<div class="empty"><b>Timetable not added yet</b>We are adding classes one by one. Check your official college timetable for now.</div>`);
 
         const pending = S.tasks.filter(t => !t.done);
         const soon = pending.filter(t => t.date).sort((a, b) => a.date.localeCompare(b.date))[0];
@@ -184,6 +191,7 @@
 
         $('#page-home').innerHTML = `
             <h1 class="hello">${greet}${named ? ', ' + esc(first) : ''}<small>${named ? 'Here is your day.' : 'Add your name in the Me tab to personalise this.'}</small></h1>
+            <button class="class-pill" data-act="pick-class" aria-label="Change class">🎓 ${esc(clsLabel())} <span>Change</span></button>
             <div class="today">
                 <div class="today-top">
                     <div class="date-big"><b>${now.getDate()}</b><span>${now.toLocaleDateString('en-IN', { weekday: 'short' })}<br>${now.toLocaleDateString('en-IN', { month: 'short' })}</span></div>
@@ -212,24 +220,24 @@
         const tabs = [['subjects', 'Subjects'], ['timetable', 'Timetable'], ['notes', 'Notes'], ['library', 'Shared']];
         let body = '';
         if (ui.studyTab === 'subjects') {
-            body = `<div class="flat">${SUBJECTS.map(s => `
+            body = !SUBJECTS.length ? `<div class="sheet-paper empty"><b>Subjects not added yet</b>The subjects for ${esc(clsLabel())} are not in ElevenNotes yet. You can still use tasks, notes, the shared library and all tools.</div>` : `<div class="flat">${SUBJECTS.map(s => `
                 <button data-act="subject" data-id="${s.id}">
                     <span class="code-chip ${s.kind}">${s.id}</span>
                     <span class="grow"><b>${esc(s.name)}</b><span>${esc(s.faculty)}</span></span><span class="go">›</span>
                 </button>`).join('')}</div>
-                <p class="fine">${SUBJECTS.length} subjects, Semester 3. Tap a subject to rate the faculty or add a note or task.</p>`;
+                <p class="fine">${SUBJECTS.length} subjects, Semester ${CLS.sem}. Tap a subject to rate the faculty or add a note or task.</p>`;
         } else if (ui.studyTab === 'timetable') {
             const dow = new Date().getDay(), todayIdx = dow === 0 ? 1 : dow;
             if (!ui.day) ui.day = todayIdx;
             const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
             const list = TIMETABLE[ui.day] || [];
-            body = `<div class="day-chips" role="tablist">${[1, 2, 3, 4, 5, 6].map(d => `<button class="chip ${ui.day === d ? 'on' : ''}" data-act="day" data-d="${d}">${DAYS[d]}${d === dow ? ' •' : ''}</button>`).join('')}</div>
+            body = !Object.keys(TIMETABLE).length ? `<div class="sheet-paper empty"><b>Timetable not added yet</b>The timetable for ${esc(clsLabel())} is not in ElevenNotes yet. Please check your official college timetable.</div>` : `<div class="day-chips" role="tablist">${[1, 2, 3, 4, 5, 6].map(d => `<button class="chip ${ui.day === d ? 'on' : ''}" data-act="day" data-d="${d}">${DAYS[d]}${d === dow ? ' •' : ''}</button>`).join('')}</div>
                 <div class="flat">${list.map(e => {
                     const info = entryInfo(e), end = e.t + e.n * PERIOD_MIN;
                     const live = ui.day === dow && nowMin >= e.t && nowMin < end;
                     return `<div class="row"><span class="code-chip ${info.kind}" style="min-width:76px">${fmtTime(e.t)}</span><span class="grow"><b>${live ? `<span class="hl">${esc(info.title)}</span><span class="tag">Now</span>` : esc(info.title)}</b><span>${esc(info.sub)}</span></span></div>`;
                 }).join('')}</div>
-                <p class="fine">Section A. Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: A1 is roll numbers 01 to 29, A2 is 30 to 58.</p>`;
+                <p class="fine">${esc(CD.note)} Always check your official college timetable too.</p>`;
         } else if (ui.studyTab === 'library') {
             body = libraryHtml();
             if (libOn() && !ui.lib.loaded && !ui.lib.loading) loadLibrary();
@@ -248,6 +256,7 @@
                     : `<div class="sheet-paper empty"><b>No notes here yet</b>Save a Google Drive link to your notes, organised by subject.</div>`}`;
         }
         $('#page-study').innerHTML = `<h1 class="ptitle">Study</h1>
+            <button class="class-pill" data-act="pick-class" aria-label="Change class">🎓 ${esc(clsLabel())} <span>Change</span></button>
             <div class="seg" role="tablist">${tabs.map(([id, label]) => `<button role="tab" class="${ui.studyTab === id ? 'on' : ''}" data-act="study-tab" data-tab="${id}">${label}</button>`).join('')}</div>${body}`;
     };
 
@@ -260,7 +269,7 @@
     // ============================================================
     const CFG = window.ELEVEN_CONFIG || {};
     const libOn = () => !!(CFG.supabaseUrl && CFG.supabaseKey);
-    const classKey = () => 'CSE-3-A';   // becomes the picked class once the class picker is added
+    const classKey = () => CLS_BRANCH.id + '-' + CLS.sem;
     const DRIVE_RE = /^https:\/\/(drive|docs)\.google\.com\//i;
 
     async function rpc(name, args) {
@@ -360,6 +369,73 @@
             <button class="btn danger block" type="submit">Delete</button></form>`);
     }
 
+
+    // ============================================================
+    //  CLASS PICKER + SEARCH
+    // ============================================================
+    const pick = { b: CLS_BRANCH.id, s: CLS.sem };
+    function pickerHtml() {
+        const has = (b, sem) => !!CLASS_DATA[b + '|' + sem];
+        return `<p class="muted" style="margin-bottom:10px">Pick your branch and semester. ElevenNotes shows the subjects, timetable and shared notes for that class.</p>
+            <h3 class="pick-h">Branch</h3>
+            <div class="pick-list">${BRANCHES.map(b => `<button class="${pick.b === b.id ? 'on' : ''}" data-act="pick-b" data-id="${b.id}"><span class="em">${b.emoji}</span><span class="grow"><b>${esc(b.name)}</b><small>${esc(b.long)}</small></span><span class="tick">${pick.b === b.id ? '✓' : ''}</span></button>`).join('')}</div>
+            <h3 class="pick-h">Semester</h3>
+            <div class="sem-grid">${SEMESTERS.map(n => `<button class="${pick.s === n ? 'on' : ''}" data-act="pick-s" data-n="${n}">${n}${has(pick.b, n) ? '<i title="Timetable available"></i>' : ''}</button>`).join('')}</div>
+            <p class="fine" style="margin-top:8px">${has(pick.b, pick.s) ? 'Timetable available for this class.' : 'Timetable for this class is not added yet. Tasks, notes, shared links and tools still work.'} A dot means a timetable is available.</p>
+            <button class="btn primary block" data-act="pick-save">${(pick.b === CLS_BRANCH.id && pick.s === CLS.sem) ? 'Continue' : 'Save class'}</button>`;
+    }
+    function pickerSheet() { pick.b = CLS_BRANCH.id; pick.s = CLS.sem; openSheet('Choose your class', pickerHtml()); }
+    function pickerRefresh() { $('#sheetBody').innerHTML = pickerHtml(); }
+
+    function searchIndex() {
+        const out = [];
+        const add = (icon, title, sub, run, hay) => out.push({ icon, title, sub, run, hay: (title + ' ' + sub + ' ' + (hay || '')).toLowerCase() });
+        BRANCHES.forEach(b => SEMESTERS.forEach(n => {
+            const here = b.id === CLS_BRANCH.id && n === CLS.sem;
+            add(b.emoji, `${b.name} · Sem ${n}`, here ? 'Your class' : 'Switch to this class', () => setClass(b.id, n), 'class branch semester sem ' + b.long);
+        }));
+        SUBJECTS.forEach(s => add('📘', s.name, `${s.id} · ${s.faculty}`, () => subjectSheet(s.id), s.code + ' subject'));
+        FACULTY.forEach(f => add('👩‍🏫', f.name, f.subject, () => go('faculty'), 'faculty teacher staff'));
+        S.notes.forEach(n => add('📝', n.title, 'Your note · ' + n.subject, () => { ui.studyTab = 'notes'; ui.noteFilter = 'all'; go('study'); }, n.desc));
+        S.tasks.forEach(t => add(t.done ? '✅' : '📋', t.title, 'Your task · ' + t.subject, () => go('plan')));
+        ui.lib.items.forEach(i => add('🔗', i.title, 'Shared · ' + i.subject, () => { ui.studyTab = 'library'; go('study'); }, i.uploader));
+        [['🗓️', 'Timetable', 'Your weekly classes', () => { ui.studyTab = 'timetable'; go('study'); }, 'schedule classes today'],
+         ['📘', 'Subjects', 'All subjects of your class', () => { ui.studyTab = 'subjects'; go('study'); }],
+         ['🔗', 'Shared library', 'Drive links from your class', () => { ui.studyTab = 'library'; go('study'); }, 'notes pdf drive'],
+         ['🎓', 'SGPA calculator', 'Estimate your SGPA', () => { go('tools'); showTool('sgpa'); }, 'grade cgpa marks'],
+         ['📈', 'Attendance planner', 'Plan how many classes to attend', () => { go('tools'); showTool('att'); }, 'percent bunk'],
+         ['⏳', 'Exam countdown', 'Days left for your dates', () => { go('tools'); showTool('count'); }, 'exam date'],
+         ['🍅', 'Focus timer', 'Pomodoro study timer', () => { go('tools'); showTool('focus'); }, 'pomodoro'],
+         ['🎉', 'Events', 'College fest', () => go('events'), 'vidhara fest'],
+         ['💬', 'Community', 'Join the community', () => go('community')],
+         ['🏅', 'Badges and level', 'Your profile and progress', () => go('me'), 'xp challenge streak profile'],
+         ['👨‍💻', 'About the developer', 'Meet Viresh', () => go('about')]
+        ].forEach(a => add(a[0], a[1], a[2], a[3], a[4]));
+        return out;
+    }
+    function searchSheet() {
+        ui.sIndex = searchIndex();
+        openSheet('Search', `<input class="srch-input" id="srchInput" type="search" placeholder="Search subjects, notes, tools, classes…" autocomplete="off" aria-label="Search" />
+            <div class="srch-results flat" id="srchOut"></div>`);
+        runSearch('');
+        const i = $('#srchInput'); if (i) i.focus();
+    }
+    function runSearch(q) {
+        q = q.trim().toLowerCase();
+        const tokens = q.split(/\s+/).filter(Boolean);
+        let res;
+        if (!tokens.length) res = ui.sIndex.filter(r => /Timetable|SGPA|Subjects|Shared library|Focus/.test(r.title) && r.sub !== 'Your class').slice(0, 5).concat([{ icon: '🎓', title: 'Change my class', sub: clsLabel(), run: pickerSheet }]);
+        else res = ui.sIndex.filter(r => tokens.every(t => r.hay.includes(t))).slice(0, 12);
+        ui.sRes = res;
+        $('#srchOut').innerHTML = res.length ? res.map((r, i) => `<button data-act="srch-go" data-i="${i}"><span class="em">${r.icon}</span><span class="grow"><b>${esc(r.title)}</b><span>${esc(r.sub)}</span></span><span class="go">›</span></button>`).join('')
+            : `<div class="empty"><b>Nothing found</b>Try a subject, a tool name, or a class like “ece 5”.</div>`;
+    }
+    function setClass(branch, sem) {
+        set('class', { branch, sem }); set('classAsked', true);
+        set('sgpa', null);   // SGPA rows follow the class subjects
+        location.reload();
+    }
+
     // ---------- PLAN ----------
     R.plan = function () {
         const total = S.tasks.length, done = S.tasks.filter(t => t.done).length;
@@ -423,6 +499,7 @@
 
             <h2 class="sec-title">Settings</h2>
             <div class="flat">
+                <button data-act="pick-class"><span class="em">🎓</span><span class="grow"><b>My class</b><span>${esc(clsLabel())}</span></span><span class="go">›</span></button>
                 <button data-act="theme"><span class="em">🌙</span><span class="grow"><b>Dark mode</b><span>Easier on the eyes at night</span></span><span class="switch ${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}"></span></button>
                 <button data-act="feedback"><span class="em">💬</span><span class="grow"><b>Send feedback</b><span>Suggest a feature or report a bug</span></span><span class="go">›</span></button>
                 <button data-act="pro"><span class="em">✨</span><span class="grow"><b>ElevenNotes Pro</b><span>Plan, revise, own your progress</span></span><span class="go">›</span></button>
@@ -439,6 +516,7 @@
     R.faculty = function () {
         $('#page-faculty').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Faculty</h1></div>
             <p class="muted" style="margin:-6px 2px 12px">Your ratings stay private on this device.</p>
+            ${!FACULTY.length ? `<div class="sheet-paper empty"><b>Faculty not added yet</b>Faculty for ${esc(clsLabel())} will appear here once the class is added.</div>` : ''}
             <div class="flat">${FACULTY.map(f => `<div class="fac"><span class="em" style="font-size:30px">${f.emoji}</span><div class="grow"><b>${esc(f.name)}</b><span class="s">${esc(f.subject)} · ${esc(f.dept)}</span></div>${starsHtml(f.name)}</div>`).join('')}</div>`;
     };
 
@@ -548,14 +626,14 @@
     // ----- countdown -----
     function renderCountdown() {
         const list = examList();
-        if (!list.find(e => e.id === ui.exam)) ui.exam = list[0].id;
+        if (list.length && !list.find(e => e.id === ui.exam)) ui.exam = list[0].id;
         $('#cdChips').innerHTML = list.map(e => `<button class="chip ${e.id === ui.exam ? 'on' : ''}" data-act="cd-pick" data-id="${esc(e.id)}">${esc(e.name)}${e.custom ? ` <span class="x" data-act="cd-rm" data-id="${esc(e.id)}" role="button" aria-label="Remove ${esc(e.name)}">✕</span>` : ''}</button>`).join('');
         tickCountdown();
     }
     function tickCountdown() {
         if (current !== 'tools') return;
         const e = examList().find(x => x.id === ui.exam);
-        if (!e) return;
+        if (!e) { $('#cdName').textContent = 'Add a date to count down to'; ['D', 'H', 'M', 'S'].forEach(k => { $('#cd' + k).textContent = '00'; }); return; }
         $('#cdName').textContent = 'Countdown to ' + e.name;
         let diff = Math.max(new Date(e.date + 'T00:00:00') - Date.now(), 0);
         const d = Math.floor(diff / 864e5); diff -= d * 864e5;
@@ -751,6 +829,12 @@
         subject(t) { subjectSheet(t.dataset.id); },
         'note-for'(t) { noteSheet(t.dataset.id); },
         'task-for'(t) { taskSheet(t.dataset.id); },
+        search: searchSheet,
+        'srch-go'(t) { const r = ui.sRes[+t.dataset.i]; if (!r) return; closeSheet(); r.run(); },
+        'pick-class': pickerSheet,
+        'pick-b'(t) { pick.b = t.dataset.id; pickerRefresh(); },
+        'pick-s'(t) { pick.s = +t.dataset.n; pickerRefresh(); },
+        'pick-save'() { if (pick.b === CLS_BRANCH.id && pick.s === CLS.sem) { set('class', { branch: pick.b, sem: pick.s }); set('classAsked', true); closeSheet(); toast('Class saved: ' + clsLabel()); } else setClass(pick.b, pick.s); },
         'lib-add'() { libAddSheet(); },
         'lib-refresh'() { ui.lib.loaded = false; loadLibrary(); },
         'lib-filter'(t) { ui.libFilter = t.dataset.f; renderCurrent(); },
@@ -797,7 +881,7 @@
         'cd-rm'(t, e) {
             e.stopPropagation();
             S.customExams = S.customExams.filter(x => x.id !== t.dataset.id); save('customExams');
-            if (ui.exam === t.dataset.id) ui.exam = EXAMS[0].id; renderCountdown();
+            if (ui.exam === t.dataset.id) ui.exam = (examList()[0] || {}).id; renderCountdown();
         },
         mode(t) { if (T.running && !confirm('The timer is running. Switch and reset it?')) return; timerReset(t.dataset.mode); },
         len(t) { if (T.running && !confirm('The timer is running. Change length and reset it?')) return; S.focusMin = +t.dataset.min; set('focusMin', S.focusMin); timerReset('focus'); },
@@ -833,6 +917,7 @@
     });
     document.addEventListener('input', e => {
         const el = e.target;
+        if (el.id === 'srchInput') { runSearch(el.value); return; }
         if (el.closest('#sgpaRows')) { sgpaRows()[+el.dataset.i][el.dataset.f] = el.value; save('sgpa'); calcSgpa(true); }
         if (el.closest('#tool-att')) calcWhatIf(true);
     });
@@ -851,4 +936,5 @@
     setInterval(() => { if (current === 'home') R.home(); }, 60000);
     route();
     checkProgress();
+    if (!get('classAsked', false)) setTimeout(() => { set('classAsked', true); pickerSheet(); }, 500);
 })();

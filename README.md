@@ -5,6 +5,7 @@
 A free, phone-first student planner built with plain HTML, CSS and JavaScript. No login, no server, no build step.
 
 ## What is inside
+- **Class picker**: choose branch (CSE A/B, AI & ML, Data Science, ISE, ECE, EEE, Mechanical, Civil) and semester. Subjects, timetable, faculty, dates and the shared library follow your class. **Search** (top bar) finds subjects, notes, tasks, tools and classes.
 - **Home**: a "Today" sheet with your classes, your next class highlighted, tasks, exam countdown and quick links
 - **Study**: subjects, a day-by-day timetable, and notes (save Google Drive links per subject)
 - **Shared library** (Study > Shared): share Google Drive links with your class. Each upload gets a 6-digit PIN, and only that PIN can delete it. Needs the free Supabase setup below.
@@ -16,7 +17,7 @@ A free, phone-first student planner built with plain HTML, CSS and JavaScript. N
 ## Privacy
 - Everything you enter is saved only in your own browser (LocalStorage). Nothing is sent anywhere.
 - ElevenNotes is **not connected to any college system or third-party portal** and does not read attendance or marks.
-- Subjects, faculty, timetable and dates are sample content for CSE Semester 3, Section A.
+- Timetables are added class by class (CSE A, Semester 3 so far). Always check your official college timetable too. Add a class in `CLASS_DATA` in `js/data.js`.
 
 ## Switching on the Shared library
 1. Create a free project at supabase.com.

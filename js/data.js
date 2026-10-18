@@ -1,69 +1,91 @@
 // ============================================================
-//  DATA.JS — sample content for ElevenNotes.
+//  DATA.JS — content for ElevenNotes.
 //  Nothing here is fetched from, or sent to, any outside system.
-//  Subjects, faculty and the timetable are sample content for
-//  CSE Sem 3, Section A.
+//  Each class (branch + semester) has its own subjects, faculty,
+//  timetable and dates in CLASS_DATA. Classes with no entry yet
+//  show a friendly "not added yet" message. Always check your
+//  official college timetable too.
 // ============================================================
 
-const SUBJECTS = [
-    { id: 'DSP',  code: '1BMATCS301', name: 'Distributions and Statistics Probability', faculty: 'Prof. G. Gangamma',    kind: 'theory', credits: 3 },
-    { id: 'JAVA', code: '1BCS302',    name: 'Object Oriented Programming with Java',    faculty: 'Dr. H. Girisha',       kind: 'theory', credits: 3 },
-    { id: 'DDCO', code: '1BCS303',    name: 'Digital Design and Computer Organization', faculty: 'Prof. Radhika Y',      kind: 'theory', credits: 3 },
-    { id: 'OS',   code: '1BCS304',    name: 'Operating Systems',                        faculty: 'Prof. Sharmila G K',   kind: 'theory', credits: 3 },
-    { id: 'DSA',  code: '1BCS305',    name: 'Data Structures and Applications',         faculty: 'Prof. Rajeswari R.P',  kind: 'theory', credits: 3 },
-    { id: 'DSL',  code: '1BCSL306',   name: 'Data Structures Laboratory',               faculty: 'Dr. Nagaveni Biradar', kind: 'lab',    credits: 1 },
-    { id: 'GIT',  code: '1BCSL307A',  name: 'Project Management (with Git)',            faculty: 'Prof. Prasanna Kumar', kind: 'lab',    credits: 1 },
-    { id: 'CP',   code: '1BCP308',    name: 'Community Project / Societal Project',     faculty: 'Dr. H. Girisha',       kind: 'project', credits: 1 }
+const BRANCHES = [
+    { id: 'CSE-A', name: 'CSE – A',        long: 'Computer Science & Engineering, Section A', emoji: '💻' },
+    { id: 'CSE-B', name: 'CSE – B',        long: 'Computer Science & Engineering, Section B', emoji: '💻' },
+    { id: 'AIML',  name: 'CSE – AI & ML',  long: 'CSE (Artificial Intelligence & Machine Learning)', emoji: '🤖' },
+    { id: 'DS',    name: 'CSE – Data Science', long: 'CSE (Data Science)', emoji: '📊' },
+    { id: 'ISE',   name: 'ISE',            long: 'Information Science & Engineering', emoji: '🧩' },
+    { id: 'ECE',   name: 'ECE',            long: 'Electronics & Communication Engineering', emoji: '📡' },
+    { id: 'EEE',   name: 'EEE',            long: 'Electrical & Electronics Engineering', emoji: '⚡' },
+    { id: 'ME',    name: 'Mechanical',     long: 'Mechanical Engineering', emoji: '⚙️' },
+    { id: 'CIVIL', name: 'Civil',          long: 'Civil Engineering', emoji: '🏗️' }
 ];
+const SEMESTERS = [1, 2, 3, 4, 5, 6, 7, 8];
+const DEFAULT_CLASS = { branch: 'CSE-A', sem: 3 };
 
-const FACULTY = [
-    { name: 'Prof. G. Gangamma',    subject: 'Distributions and Statistics Probability', dept: 'Mathematics', emoji: '👩‍🏫' },
-    { name: 'Dr. H. Girisha',       subject: 'Object Oriented Programming with Java',    dept: 'CSE',         emoji: '👨‍🏫' },
-    { name: 'Prof. Radhika Y',      subject: 'Digital Design and Computer Organization', dept: 'CSE',         emoji: '👩‍🏫' },
-    { name: 'Prof. Sharmila G K',   subject: 'Operating Systems',                        dept: 'CSE',         emoji: '👩‍🏫' },
-    { name: 'Prof. Rajeswari R.P',  subject: 'Data Structures and Applications',         dept: 'CSE',         emoji: '👩‍🏫' },
-    { name: 'Dr. Nagaveni Biradar', subject: 'Data Structures Laboratory',               dept: 'CSE',         emoji: '👩‍🏫' },
-    { name: 'Prof. Prasanna Kumar', subject: 'Project Management (with Git)',            dept: 'CSE',         emoji: '👨‍🏫' }
-];
-
-// Weekly timetable. Keys are day numbers (1 = Monday ... 6 = Saturday).
-// t = start time in minutes from midnight, n = number of periods it spans.
-// A period is 55 minutes. Break 10:50-11:00, lunch 12:50-2:15.
+// A period is 55 minutes. t = start time in minutes from midnight, n = periods it spans.
+// Keys of a timetable are day numbers (1 = Monday ... 6 = Saturday).
 const PERIOD_MIN = 55;
-const TIMETABLE = {
-    1: [
-        { t: 540, n: 1, sub: 'DSA' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'OS' },
-        { t: 855, n: 3, title: 'Lab session', detail: 'Batch A1: Data Structures Lab. Batch A2: Project Management (Git)', kind: 'lab' }
-    ],
-    2: [
-        { t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DSA' }, { t: 715, n: 1, sub: 'DSP' },
-        { t: 855, n: 3, title: 'Lab session', detail: 'Batch A2: Data Structures Lab. Batch A1: Project Management (Git)', kind: 'lab' }
-    ],
-    3: [
-        { t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DSA' }, { t: 715, n: 1, sub: 'DDCO' },
-        { t: 855, n: 1, sub: 'DSP' }, { t: 910, n: 2, sub: 'CP' }
-    ],
-    4: [
-        { t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 1, sub: 'DSP' }, { t: 715, n: 1, sub: 'DDCO' },
-        { t: 855, n: 2, title: 'OOPS Lab', detail: 'Java programming lab', kind: 'lab' },
-        { t: 965, n: 1, title: 'Yoga', detail: 'Wellness period', kind: 'free' }
-    ],
-    5: [
-        { t: 540, n: 1, sub: 'DSP' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'DDCO' },
-        { t: 855, n: 2, title: 'Library visit', detail: 'Read, borrow, revise', kind: 'free' }
-    ],
-    6: [
-        { t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'JAVA' }, { t: 715, n: 1, sub: 'DSP' }
-    ]
+
+const CLASS_DATA = {
+    'CSE-A|3': {
+        note: 'Odd semester, AY 2026-27. Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: A1 is roll numbers 01 to 29, A2 is 30 to 58.',
+        subjects: [
+            { id: 'DSP',  code: '1BMATCS301', name: 'Distributions and Statistics Probability', faculty: 'Prof. G. Gangamma',    kind: 'theory', credits: 3 },
+            { id: 'JAVA', code: '1BCS302',    name: 'Object Oriented Programming with Java',    faculty: 'Dr. H. Girisha',       kind: 'theory', credits: 3 },
+            { id: 'DDCO', code: '1BCS303',    name: 'Digital Design and Computer Organization', faculty: 'Prof. Radhika Y',      kind: 'theory', credits: 3 },
+            { id: 'OS',   code: '1BCS304',    name: 'Operating Systems',                        faculty: 'Prof. Sharmila G K',   kind: 'theory', credits: 3 },
+            { id: 'DSA',  code: '1BCS305',    name: 'Data Structures and Applications',         faculty: 'Prof. Rajeswari R.P',  kind: 'theory', credits: 3 },
+            { id: 'DSL',  code: '1BCSL306',   name: 'Data Structures Laboratory',               faculty: 'Dr. Nagaveni Biradar / Amruth V', kind: 'lab', credits: 1 },
+            { id: 'GIT',  code: '1BCSL307A',  name: 'Project Management (with Git)',            faculty: 'Prof. Prasanna Kumar', kind: 'lab',    credits: 1 },
+            { id: 'CP',   code: '1BCP308',    name: 'Community Project / Societal Project',     faculty: 'Dr. H. Girisha',       kind: 'project', credits: 1 }
+        ],
+        faculty: [
+            { name: 'Prof. G. Gangamma',    subject: 'Distributions and Statistics Probability', dept: 'Mathematics', emoji: '👩‍🏫' },
+            { name: 'Dr. H. Girisha',       subject: 'Object Oriented Programming with Java',    dept: 'CSE',         emoji: '👨‍🏫' },
+            { name: 'Prof. Radhika Y',      subject: 'Digital Design and Computer Organization', dept: 'CSE',         emoji: '👩‍🏫' },
+            { name: 'Prof. Sharmila G K',   subject: 'Operating Systems',                        dept: 'CSE',         emoji: '👩‍🏫' },
+            { name: 'Prof. Rajeswari R.P',  subject: 'Data Structures and Applications',         dept: 'CSE',         emoji: '👩‍🏫' },
+            { name: 'Dr. Nagaveni Biradar', subject: 'Data Structures Laboratory',               dept: 'CSE',         emoji: '👩‍🏫' },
+            { name: 'Amruth V',             subject: 'Data Structures Laboratory',               dept: 'CSE',         emoji: '👨‍🏫' },
+            { name: 'Prof. Prasanna Kumar', subject: 'Project Management (with Git)',            dept: 'CSE',         emoji: '👨‍🏫' }
+        ],
+        timetable: {
+            1: [
+                { t: 540, n: 1, sub: 'DSA' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'OS' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch A1: Data Structures Lab. Batch A2: Project Management (Git)', kind: 'lab' }
+            ],
+            2: [
+                { t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DSA' }, { t: 715, n: 1, sub: 'DSP' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch A2: Data Structures Lab. Batch A1: Project Management (Git)', kind: 'lab' }
+            ],
+            3: [
+                { t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DSA' }, { t: 715, n: 1, sub: 'DDCO' },
+                { t: 855, n: 1, sub: 'DSP' }, { t: 910, n: 2, sub: 'CP' }
+            ],
+            4: [
+                { t: 540, n: 2, title: 'OOPS Lab', detail: 'Java programming lab', kind: 'lab' },
+                { t: 660, n: 1, sub: 'DSP' }, { t: 715, n: 1, sub: 'DDCO' },
+                { t: 855, n: 1, sub: 'JAVA' }, { t: 910, n: 1, sub: 'OS' },
+                { t: 965, n: 1, title: 'Yoga', detail: 'Wellness period', kind: 'free' }
+            ],
+            5: [
+                { t: 540, n: 1, sub: 'DSP' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'DDCO' },
+                { t: 855, n: 2, title: 'Library visit', detail: 'Read, borrow, revise', kind: 'free' }
+            ],
+            6: [
+                { t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'JAVA' }, { t: 715, n: 1, sub: 'DSP' }
+            ]
+        },
+        exams: [
+            { id: 'last',   name: 'Last working day', date: '2026-12-30' },
+            { id: 'theory', name: 'VTU theory exams', date: '2027-01-04' },
+            { id: 'prac',   name: 'Practical exams',  date: '2027-02-08' },
+            { id: 'next',   name: 'Next semester',    date: '2027-02-22' }
+        ]
+    }
 };
 
-// Semester dates for the countdown tool
-const EXAMS = [
-    { id: 'last',   name: 'Last working day', date: '2026-12-30' },
-    { id: 'theory', name: 'VTU theory exams', date: '2027-01-04' },
-    { id: 'prac',   name: 'Practical exams',  date: '2027-02-08' },
-    { id: 'next',   name: 'Next semester',    date: '2027-02-22' }
-];
+// Active class data. app.js fills these in from the class the student picked.
+let SUBJECTS = [], FACULTY = [], TIMETABLE = {}, EXAMS = [];
 
 // VTU grade scale (percentage of marks -> grade point)
 const GRADES = [

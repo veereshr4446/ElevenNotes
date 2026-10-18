@@ -52,12 +52,19 @@
 
     // ---------- toast & sheet ----------
     let toastTimer;
-    function toast(msg) {
+    // Toasts are only for things that happen outside what the student is looking at
+    // (achievements, a finished timer) or for errors. Normal saves show on screen already.
+    function toast(msg, kind, title) {
         const t = $('#toast');
-        t.textContent = msg;
-        t.classList.add('show');
+        t.className = 'toast ' + (kind || '') + ' show';
+        t.innerHTML = (title ? `<b>${esc(title)}</b>` : '') + `<span>${esc(msg)}</span>`;
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+        toastTimer = setTimeout(() => t.classList.remove('show'), kind === 'err' ? 4200 : 3200);
+    }
+    function formError(f, msg) {
+        let e = f.querySelector('.form-err');
+        if (!e) { e = document.createElement('p'); e.className = 'form-err'; e.setAttribute('role', 'alert'); f.insertBefore(e, f.querySelector('[type=submit]')); }
+        e.textContent = msg;
     }
 
     let lastFocus = null, sheetGuard = null;
@@ -116,7 +123,7 @@
             if (c.val(d) >= c.goal && !d.claimed.includes(c.id)) {
                 d.claimed.push(c.id);
                 S.stats.bonusXp += c.xp;
-                toast(`Challenge done: ${c.text}. +${c.xp} XP`);
+                toast(`${c.text} (+${c.xp} XP)`, 'win', 'Challenge complete');
             }
         });
         save('daily'); save('stats');
@@ -125,7 +132,7 @@
         if (fresh.length) {
             S.seen = S.seen.concat(fresh); save('seen');
             const b = BADGES.find(x => x.id === fresh[0]);
-            setTimeout(() => toast(`New badge: ${b.icon} ${b.name}`), 400);
+            if (b.id !== 'hello') setTimeout(() => toast(b.name, 'win', 'Badge unlocked'), 400);
         }
     }
     function bump(field, n = 1, dailyField) {
@@ -308,7 +315,7 @@
             <div class="note">
                 <div class="note-top"><span class="code-chip">${esc(n.subject)}</span><span class="date-sm">${esc(new Date(n.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span></div>
                 <h3>${esc(n.title)}</h3><p>Shared by ${esc(n.uploader)}${mine.includes(n.id) ? ' <span class="tag">You</span>' : ''}</p>
-                <div class="note-actions"><a class="link-btn" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Open link</a><button class="del" data-act="lib-del" data-id="${esc(n.id)}">Delete</button><button class="del" data-act="lib-report" data-id="${esc(n.id)}">Report</button></div>
+                <div class="note-actions"><a class="link-btn" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Open link</a><button class="del" data-act="lib-del" data-id="${esc(n.id)}">Delete</button>${get('reportedLib', []).includes(n.id) ? '<span class="del off">Reported</span>' : `<button class="del" data-act="lib-report" data-id="${esc(n.id)}">Report</button>`}</div>
             </div>`).join('')}</div>`;
         return `<p class="fine" style="margin:0 0 12px">Drive links shared by your classmates. Anyone can add one. Only the person who shared it can delete it, using their 6-digit PIN.</p>
             <div class="lib-actions"><button class="btn primary small" data-act="lib-add">Share a link</button><button class="btn ghost small" data-act="lib-refresh">${L.loading ? 'Loading…' : 'Refresh'}</button></div>
@@ -354,7 +361,7 @@
                 const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
                 try { ok = document.execCommand('copy'); } catch (e2) { ok = false; } ta.remove();
             }
-            if (ok) { copied = true; $('#copyAll').textContent = 'Copied'; toast('Details copied'); } else toast('Could not copy. Please take a screenshot instead.');
+            if (ok) { copied = true; $('#copyAll').textContent = 'Copied'; } else toast('Could not copy. Please take a screenshot instead.', 'err');
         });
         sheetGuard = () => copied || confirm('Have you saved your PIN (' + d.pin + ')? It cannot be recovered. Close anyway?');
         // the "I have saved it" button counts as confirmation
@@ -678,7 +685,7 @@
         S.sessions = S.sessions.slice(0, 30); save('sessions');
         if (wasFocus) { S.stats.focusSessions++; S.stats.focusMinutes += Math.round(T.total / 60); today().focusSessions++; save('stats'); save('daily'); }
         timerReset(wasFocus ? 'short' : 'focus');
-        toast(wasFocus ? 'Focus session done. Take a short break.' : 'Break over. Ready for the next one?');
+        toast(wasFocus ? 'Time for a short break.' : 'Ready for the next focus session.', '', wasFocus ? 'Focus session complete' : 'Break over');
         if (wasFocus) checkProgress();
     }
 
@@ -746,9 +753,9 @@
     const FORMS = {
         async share(f) {
             const title = f.title.value.trim(), url = f.url.value.trim(), pin = f.pin.value.trim();
-            if (title.length < 2) { toast('Please add a title'); return; }
-            if (!DRIVE_RE.test(url)) { toast('Please paste a Google Drive or Docs link (https://drive.google.com/...)'); return; }
-            if (!/^[0-9]{6}$/.test(pin)) { toast('The PIN must be exactly 6 digits'); return; }
+            if (title.length < 2) { formError(f, 'Please add a title.'); return; }
+            if (!DRIVE_RE.test(url)) { formError(f, 'Please paste a Google Drive or Google Docs link.'); return; }
+            if (!/^[0-9]{6}$/.test(pin)) { formError(f, 'The PIN must be exactly 6 digits.'); return; }
             const btn = f.querySelector('[type=submit]'); btn.disabled = true; btn.textContent = 'Sharing…';
             const d = { title, url, pin, subject: f.subject.value, uploader: f.uploader.value.trim() || 'Student', date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) };
             try {
@@ -756,43 +763,43 @@
                 const mine = get('mineLib', []); mine.push(id); set('mineLib', mine.slice(-100));
                 ui.lib.loaded = false; ui.lib.items = [];
                 closeSheet(); receiptSheet(d); loadLibrary();
-            } catch (e) { btn.disabled = false; btn.textContent = 'Share'; toast('Could not share. Check your internet and try again.'); }
+            } catch (e) { btn.disabled = false; btn.textContent = 'Share'; formError(f, 'Could not share. Check your internet connection and try again.'); }
         },
         async unshare(f) {
             const id = f.id.value, pin = f.pin.value.trim();
-            if (!/^[0-9]{6}$/.test(pin)) { toast('The PIN must be exactly 6 digits'); return; }
+            if (!/^[0-9]{6}$/.test(pin)) { formError(f, 'The PIN must be exactly 6 digits.'); return; }
             const btn = f.querySelector('[type=submit]'); btn.disabled = true;
             try {
                 const r = await rpc('delete_resource', { p_id: id, p_pin: pin });
-                if (r === 'ok' || r === 'missing') { ui.lib.items = ui.lib.items.filter(i => i.id !== id); closeSheet(); renderCurrent(); toast(r === 'ok' ? 'Deleted' : 'That link is already gone'); }
-                else if (r === 'locked') { btn.disabled = false; toast('Too many wrong PINs. Try again in 15 minutes.'); }
-                else { btn.disabled = false; f.pin.value = ''; toast('Wrong PIN. Please try again.'); }
-            } catch (e) { btn.disabled = false; toast('Could not delete. Check your internet and try again.'); }
+                if (r === 'ok' || r === 'missing') { ui.lib.items = ui.lib.items.filter(i => i.id !== id); closeSheet(); renderCurrent(); }
+                else if (r === 'locked') { btn.disabled = false; formError(f, 'Too many wrong attempts. Try again in 15 minutes.'); }
+                else { btn.disabled = false; f.pin.value = ''; f.pin.focus(); formError(f, 'That PIN is not correct.'); }
+            } catch (e) { btn.disabled = false; formError(f, 'Could not delete. Check your internet connection and try again.'); }
         },
         task(f) {
             const title = f.title.value.trim(); if (!title) return;
             S.tasks.unshift({ id: uid(), title, subject: f.subject.value, priority: f.priority.value, date: f.date.value || '', done: false, counted: false });
             save('tasks'); bump('tasksDone', 0, 'added');
-            closeSheet(); renderCurrent(); toast('Task saved');
+            closeSheet(); renderCurrent();
         },
         note(f) {
             const title = f.title.value.trim(), link = f.link.value.trim();
             if (!title) return;
-            if (link && !/^https?:\/\//i.test(link)) { toast('Paste a full link that starts with https://'); return; }
+            if (link && !/^https?:\/\//i.test(link)) { formError(f, 'Paste a full link that starts with https://'); return; }
             S.notes.unshift({ id: uid(), title, subject: f.subject.value, link, desc: f.desc.value.trim(), date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) });
             save('notes'); bump('notesAdded', 1, 'added');
-            closeSheet(); renderCurrent(); toast('Note saved');
+            closeSheet(); renderCurrent();
         },
         profile(f) {
             const name = f.name.value.trim(); if (!name) return;
             S.profile.name = name; S.profile.usn = f.usn.value.trim().toUpperCase(); S.profile.bio = f.bio.value.trim() || defaultProfile.bio;
             save('profile'); checkProgress();
-            closeSheet(); renderCurrent(); toast('Profile updated');
+            closeSheet(); renderCurrent();
         },
         exam(f) {
             const name = f.name.value.trim(); if (!name || !f.date.value) return;
             const id = 'c' + uid(); S.customExams.push({ id, name, date: f.date.value, custom: true });
-            save('customExams'); ui.exam = id; closeSheet(); renderCountdown(); toast('Date added');
+            save('customExams'); ui.exam = id; closeSheet(); renderCountdown();
         }
     };
 
@@ -825,35 +832,38 @@
         'pick-class': pickerSheet,
         'pick-b'(t) { pick.b = t.dataset.id; pickerRefresh(); },
         'pick-s'(t) { pick.s = +t.dataset.n; pickerRefresh(); },
-        'pick-save'() { if (pick.b === CLS_BRANCH.id && pick.s === CLS.sem) { set('class', { branch: pick.b, sem: pick.s }); set('classAsked', true); closeSheet(); toast('Class saved: ' + clsLabel()); } else setClass(pick.b, pick.s); },
+        'pick-save'() { if (pick.b === CLS_BRANCH.id && pick.s === CLS.sem) { set('class', { branch: pick.b, sem: pick.s }); set('classAsked', true); closeSheet(); if (current === 'me') renderCurrent(); } else setClass(pick.b, pick.s); },
         'lib-add'() { libAddSheet(); },
         'lib-refresh'() { ui.lib.loaded = false; loadLibrary(); },
         'lib-filter'(t) { ui.libFilter = t.dataset.f; renderCurrent(); },
         'lib-del'(t) { libDelSheet(t.dataset.id); },
         'lib-report'(t) {
             const rep = get('reportedLib', []);
-            if (rep.includes(t.dataset.id)) { toast('You already reported this'); return; }
+            if (rep.includes(t.dataset.id)) return;
             if (!confirm('Report this link as spam or not suitable?')) return;
-            rep.push(t.dataset.id); set('reportedLib', rep.slice(-200));
-            rpc('report_resource', { p_id: t.dataset.id }).then(() => toast('Thanks. Reported.')).catch(() => toast('Could not report. Try again later.'));
+            rep.push(t.dataset.id); set('reportedLib', rep.slice(-200)); renderCurrent();
+            rpc('report_resource', { p_id: t.dataset.id }).catch(() => {
+                set('reportedLib', get('reportedLib', []).filter(x => x !== t.dataset.id)); renderCurrent();
+                toast('Could not send the report. Please try again later.', 'err');
+            });
         },
         'pin-gen'(t) { const i = t.closest('form').pin; i.value = randomPin(); i.focus(); },
         'add-note'() { noteSheet(); },
         'add-task'() { taskSheet(); },
         'note-filter'(t) { ui.noteFilter = t.dataset.f; renderCurrent(); },
-        'del-note'(t) { S.notes = S.notes.filter(n => n.id !== t.dataset.id); save('notes'); renderCurrent(); toast('Note deleted'); },
+        'del-note'(t) { S.notes = S.notes.filter(n => n.id !== t.dataset.id); save('notes'); renderCurrent(); },
         'plan-filter'(t) { ui.planFilter = t.dataset.f; renderCurrent(); },
         toggle(t) {
             const task = S.tasks.find(x => x.id === t.dataset.id); if (!task) return;
             task.done = !task.done; save('tasks');
-            if (task.done && !task.counted) { task.counted = true; save('tasks'); bump('tasksDone', 1, 'tasksDone'); toast('Task done. +10 XP'); }
+            if (task.done && !task.counted) { task.counted = true; save('tasks'); bump('tasksDone', 1, 'tasksDone'); }
             renderCurrent();
         },
-        'del-task'(t) { S.tasks = S.tasks.filter(x => x.id !== t.dataset.id); save('tasks'); renderCurrent(); toast('Task deleted'); },
-        'pick-avatar'(t) { S.profile.avatar = t.dataset.src; save('profile'); closeSheet(); renderCurrent(); toast('Picture updated'); },
+        'del-task'(t) { S.tasks = S.tasks.filter(x => x.id !== t.dataset.id); save('tasks'); renderCurrent(); },
+        'pick-avatar'(t) { S.profile.avatar = t.dataset.src; save('profile'); closeSheet(); renderCurrent(); },
         badge(t) {
             const b = BADGES.find(x => x.id === t.dataset.id), got = b.val(derived()) >= b.goal;
-            toast(got ? `${b.icon} ${b.name}: earned` : `${b.icon} ${b.name}: ${b.how}`);
+            toast(got ? 'You have earned this badge.' : b.how, '', b.name);
         },
         rate(t) {
             const name = t.dataset.name, v = +t.dataset.v;
@@ -863,7 +873,6 @@
         },
         circle(t) {
             const id = t.dataset.id; S.circles[id] = !S.circles[id]; save('circles'); checkProgress(); renderCurrent();
-            toast(S.circles[id] ? 'Joined the study circle' : 'Left the study circle');
         },
         'sgpa-add'() { sgpaRows().push({ name: '', credits: 3, marks: '' }); save('sgpa'); renderSgpaRows(); },
         'sgpa-rm'(t) { sgpaRows().splice(+t.dataset.i, 1); save('sgpa'); renderSgpaRows(); },
@@ -881,7 +890,7 @@
         't-skip'() { timerReset(T.mode === 'focus' ? 'short' : 'focus'); },
         music() {
             const a = $('#lofi'), b = $('#musicBtn');
-            if (a.paused) { a.play().then(() => { b.classList.add('playing'); b.setAttribute('aria-pressed', 'true'); $('#musicState').textContent = 'Playing, tap to pause'; }).catch(() => toast('Could not play the music')); }
+            if (a.paused) { a.play().then(() => { b.classList.add('playing'); b.setAttribute('aria-pressed', 'true'); $('#musicState').textContent = 'Playing, tap to pause'; }).catch(() => toast('Could not play the music.', 'err')); }
             else { a.pause(); b.classList.remove('playing'); b.setAttribute('aria-pressed', 'false'); $('#musicState').textContent = 'Tap to play'; }
         },
         reset() {
@@ -908,6 +917,7 @@
     });
     document.addEventListener('input', e => {
         const el = e.target;
+        const fe = el.closest && el.closest('form') && el.closest('form').querySelector('.form-err'); if (fe) fe.remove();
         if (el.id === 'srchInput') { runSearch(el.value); return; }
         if (el.closest('#sgpaRows')) { sgpaRows()[+el.dataset.i][el.dataset.f] = el.value; save('sgpa'); calcSgpa(true); }
         if (el.closest('#tool-att')) calcWhatIf(true);

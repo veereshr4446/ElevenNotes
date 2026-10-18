@@ -1,1776 +1,702 @@
 // ============================================================
-//  APP.JS — All interactive behavior for ElevenNotes.
+//  APP.JS — ElevenNotes
+//  Everything is saved only in this browser (LocalStorage).
+//  No accounts, no server, no outside connections.
 // ============================================================
-
-const LS_PREFIX = 'elevenNotes_';
-function lsGet(key, fallback) {
-    try { const v = localStorage.getItem(LS_PREFIX + key); return v !== null ? JSON.parse(v) : fallback; }
-    catch (e) { return fallback; }
-}
-function lsSet(key, val) {
-    try { localStorage.setItem(LS_PREFIX + key, JSON.stringify(val)); } catch (e) { /* ignore */ }
-}
-
-// ============================================================
-//  SIDEBAR
-// ============================================================
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
-    document.getElementById('sidebarOverlay').classList.toggle('active');
-    document.body.style.overflow = document.getElementById('sidebar').classList.contains('open') ? 'hidden' : '';
-}
-function closeSidebar() {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-// ============================================================
-//  PAGE NAVIGATION
-// ============================================================
-function showPage(pageId) {
-    document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-    const target = document.getElementById('page-' + pageId);
-    if (target) target.classList.add('active');
-
-    document.querySelectorAll('.sidebar-nav li a').forEach(a => a.classList.remove('active'));
-    document.querySelectorAll('.bottom-nav button[data-page]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.page === pageId);
-    });
-
-    closeSidebar();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    initProgressBars();
-
-    if (pageId === 'planner') updatePlannerProgress();
-    if (pageId === 'profile') setTimeout(updateSelectedAvatar, 100);
-}
-
-function scrollToSection(id) {
-    setTimeout(() => {
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-}
-
-// ============================================================
-//  THEME
-// ============================================================
-function toggleTheme() {
-    const html = document.documentElement;
-    const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', newTheme);
-    const icon = document.getElementById('themeIcon');
-    if (icon) icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-    lsSet('theme', newTheme);
-}
-function loadTheme() {
-    const saved = lsGet('theme', 'light');
-    document.documentElement.setAttribute('data-theme', saved);
-    const icon = document.getElementById('themeIcon');
-    if (icon) icon.className = saved === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-}
-
-
-// ============================================================
-//  TOAST
-// ============================================================
-let toastTimeout;
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    document.getElementById('toastMessage').textContent = message;
-    toast.classList.add('show');
-    clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
-// ============================================================
-//  GENERIC DETAIL MODAL
-// ============================================================
-function openModal(title, subtitle, contentHtml) {
-    document.getElementById('modalTitle').textContent = title;
-    document.getElementById('modalSubtitle').textContent = subtitle;
-    document.getElementById('modalContent').innerHTML = contentHtml;
-    document.getElementById('detailModal').classList.add('active');
-
-    document.body.classList.add('modal-open');
-}
-function closeModal() {
-    document.getElementById('detailModal').classList.remove('active');
-
-    document.body.classList.remove('modal-open');
-}
-// ----- Stat card click handlers -----
-function showStreakDetails() {
-    document.getElementById('streakModal').classList.add('active');
-}
-
-function closeStreakDetails() {
-    document.getElementById('streakModal').classList.remove('active');
-}
-
-function showAllSubjects() {
-    const html = subjectsData.map((s, i) => `<div class="modal-item"><span>${i + 1}. ${s.code}</span><span>${s.name}</span></div>`).join('');
-    openModal('📚 All Subjects', `Total: ${subjectsData.length} subjects`, html);
-}
-function showCollegeEvents() {
-
-    const slides = [
-
-        /* =========================
-           SLIDE 1
-        ========================= */
-        `
-        <div class="vh-slide">
-            <div class="vh-slide-header">
-                <div class="vh-category-icon">💻</div>
-                <div>
-                    <span>VIDHARA 2K26–27 • CSE DEPARTMENT</span>
-                    <h3>TECHNICAL EVENTS</h3>
-                </div>
-            </div>
-
-            <div class="vh-event-card blue-card">
-                <div class="vh-event-icon">🌐</div>
-                <div class="vh-event-info">
-                    <h4>Web Development</h4>
-                    <p>
-                        Develop a web-based solution for a real-world
-                        problem by integrating Artificial Intelligence.
-                    </p>
-                    <div class="vh-highlight">
-                        AI tools/models, web technologies, databases and APIs can be used.
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card purple-card">
-                <div class="vh-event-icon">🧠</div>
-                <div class="vh-event-info">
-                    <h4>Mind Hack</h4>
-                    <p>
-                        Solve logic traps, pattern puzzles and
-                        misleading clues.
-                    </p>
-                    <div class="vh-highlight">
-                        Tests logical thinking, observation, pattern recognition and problem-solving.
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card pink-card">
-                <div class="vh-event-icon">🐞</div>
-                <div class="vh-event-info">
-                    <h4>Coding & Debugging</h4>
-                    <p>
-                        Debugging Duel: identify and fix errors in
-                        a given program within the specified time limit.
-                    </p>
-                    <div class="vh-highlight">
-                        Reverse Coding: write the program that produces the given output.
-                    </div>
-                </div>
-            </div>
-        </div>
-        `,
-
-        /* =========================
-           SLIDE 2
-        ========================= */
-        `
-        <div class="vh-slide">
-            <div class="vh-slide-header">
-                <div class="vh-category-icon">🏆</div>
-                <div>
-                    <span>VIDHARA 2K26–27 • CSE DEPARTMENT</span>
-                    <h3>TECHNICAL EVENTS</h3>
-                </div>
-            </div>
-
-            <div class="vh-event-card blue-card">
-                <div class="vh-event-icon">🏆</div>
-                <div class="vh-event-info">
-                    <h4>Tech Quiz</h4>
-                    <p>
-                        A quiz focused completely on technology
-                        and computer science.
-                    </p>
-                    <div class="vh-highlight">
-                        Programming • OS • DBMS • Cybersecurity • Technologies • Gadgets • Rapid Fire
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card purple-card">
-                <div class="vh-event-icon">🔎</div>
-                <div class="vh-event-info">
-                    <h4>Web Search Hunt</h4>
-                    <p>
-                        A multiplayer online search challenge where
-                        participants solve riddles and puzzles using the web.
-                    </p>
-                    <div class="vh-highlight">
-                        Logical thinking • Web searching • Observation • Teamwork
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card pink-card">
-                <div class="vh-event-icon">💡</div>
-                <div class="vh-event-info">
-                    <h4>Tech Pitch</h4>
-                    <p>
-                        Present and pitch a technology-based idea,
-                        product or solution before the judges.
-                    </p>
-                    <div class="vh-highlight">
-                        Problem statement • Innovation • Solution • Technology • Feasibility
-                    </div>
-                </div>
-            </div>
-        </div>
-        `,
-
-        /* =========================
-           SLIDE 3
-        ========================= */
-        `
-        <div class="vh-slide">
-            <div class="vh-slide-header">
-                <div class="vh-category-icon">🎮</div>
-                <div>
-                    <span>VIDHARA 2K26–27</span>
-                    <h3>GAMES</h3>
-                </div>
-            </div>
-
-            <div class="vh-event-card blue-card">
-                <div class="vh-event-icon">🗺️</div>
-                <div class="vh-event-info">
-                    <h4>Treasure Hunt</h4>
-                    <p>
-                        Find clues, solve challenges and race
-                        towards the final treasure.
-                    </p>
-                </div>
-            </div>
-
-            <div class="vh-event-card red-card">
-                <div class="vh-event-icon">🔥</div>
-                <div class="vh-event-info">
-                    <h4>Free Fire</h4>
-                    <p>
-                        Competitive gaming event open to
-                        participating students.
-                    </p>
-                    <div class="vh-highlight">
-                        Open to all branches
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card purple-card">
-                <div class="vh-event-icon">🎮</div>
-                <div class="vh-event-info">
-                    <h4>BGMI</h4>
-                    <p>
-                        Competitive multiplayer gaming event
-                        for participating students.
-                    </p>
-                    <div class="vh-highlight">
-                        Open to all branches
-                    </div>
-                </div>
-            </div>
-        </div>
-        `,
-
-        /* =========================
-           SLIDE 4
-        ========================= */
-        `
-        <div class="vh-slide">
-            <div class="vh-slide-header">
-                <div class="vh-category-icon">🎭</div>
-                <div>
-                    <span>17 OCTOBER • ACTIVITIES</span>
-                    <h3>GROUP & FUN ACTIVITIES</h3>
-                </div>
-            </div>
-
-            <div class="vh-event-card blue-card">
-                <div class="vh-event-icon">💃</div>
-                <div class="vh-event-info">
-                    <h4>Flash Mob</h4>
-                    <p>
-                        Dance performance featuring both
-                        group and individual participation.
-                    </p>
-                    <div class="vh-highlight">
-                        17 October
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card purple-card">
-                <div class="vh-event-icon">💪</div>
-                <div class="vh-event-info">
-                    <h4>Tug of War</h4>
-                    <p>
-                        Team-based competition between
-                        participating departments.
-                    </p>
-                    <div class="vh-highlight">
-                        Department of DS & CY
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card pink-card">
-                <div class="vh-event-icon">🏏</div>
-                <div class="vh-event-info">
-                    <h4>Mini Cricket</h4>
-                    <p>
-                        Short-format cricket competition
-                        between participating teams.
-                    </p>
-                    <div class="vh-highlight">
-                        Department of DS & CY
-                    </div>
-                </div>
-            </div>
-
-            <div class="vh-event-card blue-card">
-                <div class="vh-event-icon">🏸</div>
-                <div class="vh-event-info">
-                    <h4>Badminton / Football</h4>
-                    <p>
-                        Choose between badminton or football
-                        and participate with students across branches.
-                    </p>
-                    <div class="vh-highlight">
-                        Open to all branches
-                    </div>
-                </div>
-            </div>
-        </div>
-        `,
-
-        /* =========================
-           SLIDE 5
-        ========================= */
-        `
-        <div class="vh-slide vh-final-slide">
-            <div class="vh-slide-header">
-                <div class="vh-category-icon">👗</div>
-                <div>
-                    <span>18 OCTOBER</span>
-                    <h3>ETHNIC DAY</h3>
-                </div>
-            </div>
-
-            <div class="vh-ethnic-hero">
-                <div class="vh-ethnic-icon">📸</div>
-                <h3>Ethnic Day</h3>
-                <p>
-                    Celebrate the day with traditional
-                    outfits and capture memorable moments.
-                </p>
-
-                <div class="vh-photo-booth">
-                    📸 Photo Booth
-                </div>
-            </div>
-
-            <div class="vh-date-badge">
-                <strong>18 OCTOBER</strong>
-                <span>Ethnic Day Celebration</span>
-            </div>
-        </div>
-        `
-    ];
-
-    let currentSlide = 0;
-
-    const content = `
-        <div class="vh-modal">
-
-            <div class="vh-modal-top">
-                <div>
-                    <h2>⚡ VIDHARA 2K26–27</h2>
-                    <p>CSE Department • Tech Fest • 16–18 October</p>
-                </div>
-
-                <button
-                    class="vh-close"
-                    onclick="closeModal()"
-                    aria-label="Close">
-                    &times;
-                </button>
-            </div>
-
-            <div class="vh-carousel">
-
-                <div class="vh-track" id="vhTrack">
-
-                    ${slides.map(slide => `
-                        <div class="vh-carousel-slide">
-                            ${slide}
-                        </div>
-                    `).join('')}
-
-                </div>
-
-            </div>
-
-            <div class="vh-navigation">
-
-                <button
-                    class="vh-nav-btn"
-                    id="vhPrev"
-                    type="button"
-                    aria-label="Previous slide">
-
-                    <i class="fas fa-chevron-left"></i>
-
-                </button>
-
-                <div class="vh-dots" id="vhDots">
-
-                    ${slides.map((_, index) => `
-                        <button
-                            class="vh-dot ${index === 0 ? 'active' : ''}"
-                            data-slide="${index}"
-                            type="button"
-                            aria-label="Go to slide ${index + 1}">
-                        </button>
-                    `).join('')}
-
-                </div>
-
-                <button
-                    class="vh-nav-btn"
-                    id="vhNext"
-                    type="button"
-                    aria-label="Next slide">
-
-                    <i class="fas fa-chevron-right"></i>
-
-                </button>
-
-            </div>
-
-            <div class="vh-slide-count" id="vhSlideCount">
-                1 / ${slides.length}
-            </div>
-
-        </div>
-    `;
-
-    openModal(
-        '⚡ VIDHARA 2K26–27',
-        'CSE Department • Tech Fest • 16–18 October',
-        content
-    );
-
-    setTimeout(() => {
-
-        const track = document.getElementById('vhTrack');
-        const prev = document.getElementById('vhPrev');
-        const next = document.getElementById('vhNext');
-        const dots = document.querySelectorAll('.vh-dot');
-        const count = document.getElementById('vhSlideCount');
-
-        if (!track || !prev || !next) return;
-
-
-        /* =====================================================
-           UPDATE CAROUSEL
-        ===================================================== */
-
-        function updateSlide() {
-
-            track.style.transform =
-                `translateX(-${currentSlide * 100}%)`;
-
-            dots.forEach((dot, index) => {
-
-                dot.classList.toggle(
-                    'active',
-                    index === currentSlide
-                );
-
-            });
-                        if (count) {
-            
-                            count.textContent =
-                                `${currentSlide + 1} / ${slides.length}`;
-            
-                        }
-            
-            function onKey(e) {
-                if (!track.isConnected) {            // modal was closed, so clean up
-                    document.removeEventListener('keydown', onKey);
-                    return;
-                }
-                if (e.key === 'ArrowRight') nextSlide();
-                if (e.key === 'ArrowLeft')  previousSlide();
-            }
-            document.addEventListener('keydown', onKey);
-
-
-            /* -----------------------------------------------
-               Disable arrows at the beginning/end
-            ----------------------------------------------- */
-
-            prev.disabled = currentSlide === 0;
-            next.disabled = currentSlide === slides.length - 1;
-
-            prev.style.opacity =
-                currentSlide === 0 ? '0.45' : '1';
-
-            next.style.opacity =
-                currentSlide === slides.length - 1 ? '0.45' : '1';
-
-            prev.style.pointerEvents =
-                currentSlide === 0 ? 'none' : 'auto';
-
-            next.style.pointerEvents =
-                currentSlide === slides.length - 1 ? 'none' : 'auto';
-        }
-
-
-        /* =====================================================
-           NEXT
-        ===================================================== */
-
-        function nextSlide() {
-
-            if (currentSlide >= slides.length - 1) {
-                return;
-            }
-
-            currentSlide++;
-
-            updateSlide();
-        }
-
-
-        /* =====================================================
-           PREVIOUS
-        ===================================================== */
-
-        function previousSlide() {
-
-            if (currentSlide <= 0) {
-                return;
-            }
-
-            currentSlide--;
-
-            updateSlide();
-        }
-
-
-        /* =====================================================
-           BUTTONS
-        ===================================================== */
-
-        next.addEventListener(
-            'click',
-            nextSlide
-        );
-
-        prev.addEventListener(
-            'click',
-            previousSlide
-        );
-
-
-        /* =====================================================
-           DOTS
-        ===================================================== */
-
-        dots.forEach(dot => {
-
-            dot.addEventListener(
-                'click',
-                () => {
-
-                    const target =
-                        Number(dot.dataset.slide);
-
-                    if (
-                        Number.isNaN(target) ||
-                        target < 0 ||
-                        target >= slides.length
-                    ) {
-                        return;
-                    }
-
-                    currentSlide = target;
-
-                    updateSlide();
-
-                }
-            );
-
-        });
-
-
-        /* =====================================================
-           TOUCH SWIPE
-        ===================================================== */
-
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchEndX = 0;
-        let touchEndY = 0;
-
-        track.addEventListener(
-            'touchstart',
-            event => {
-
-                const touch =
-                    event.changedTouches[0];
-
-                touchStartX = touch.screenX;
-                touchStartY = touch.screenY;
-
-            },
-            { passive: true }
-        );
-
-
-        track.addEventListener(
-            'touchend',
-            event => {
-
-                const touch =
-                    event.changedTouches[0];
-
-                touchEndX = touch.screenX;
-                touchEndY = touch.screenY;
-
-                const diffX =
-                    touchStartX - touchEndX;
-
-                const diffY =
-                    touchStartY - touchEndY;
-
-
-                /* Ignore mostly vertical scrolling */
-
-                if (
-                    Math.abs(diffX) < 50 ||
-                    Math.abs(diffX) < Math.abs(diffY)
-                ) {
-                    return;
-                }
-
-
-                /* Swipe LEFT → NEXT */
-
-                if (diffX > 0) {
-
-                    if (
-                        currentSlide <
-                        slides.length - 1
-                    ) {
-                        currentSlide++;
-                        updateSlide();
-                    }
-
-                    return;
-                }
-
-
-                /* Swipe RIGHT → PREVIOUS */
-
-                if (diffX < 0) {
-
-                    if (currentSlide > 0) {
-                        currentSlide--;
-                        updateSlide();
-                    }
-
-                }
-
-            },
-            { passive: true }
-        );
-
-
-        /* =====================================================
-           INITIAL STATE
-        ===================================================== */
-
-        updateSlide();
-
-    }, 50);
-}
-// ============================================================
-//  FACULTY RATINGS
-// ============================================================
-let currentHomeFaculty = '';
-let homeRatingStar = 0;
-let currentDetailFaculty = '';
-let detailRatingStar = 0;
-
-function getRatings() { return lsGet('facultyRatings', {}); }
-function saveRatings(r) { lsSet('facultyRatings', r); }
-
-function openRatingModal(facultyName) {
-    currentHomeFaculty = facultyName;
-    homeRatingStar = getRatings()[facultyName] || 0;
-    document.getElementById('homeModalFacultyName').textContent = facultyName;
-    paintStars('starContainer', homeRatingStar);
-    document.getElementById('ratingModal').classList.add('active');
-}
-function closeRatingModal() { document.getElementById('ratingModal').classList.remove('active'); }
-function submitRating() {
-    if (homeRatingStar === 0) { showToast('⚠️ Please select a rating'); return; }
-    const ratings = getRatings();
-    ratings[currentHomeFaculty] = homeRatingStar;
-    saveRatings(ratings);
-    closeRatingModal();
-    showToast(`⭐ Rated ${currentHomeFaculty} with ${homeRatingStar} stars!`);
-}
-
-function openFacultyDetail(facultyName) {
-    const faculty = facultyData.find(f => f.name === facultyName);
-    if (!faculty) return;
-    currentDetailFaculty = facultyName;
-    detailRatingStar = getRatings()[facultyName] || 0;
-    document.getElementById('modalFacultyName').textContent = facultyName;
-    document.getElementById('modalFacultySubject').textContent = faculty.subject;
-    document.getElementById('modalFacultyDept').textContent = faculty.dept;
-    document.getElementById('modalFacultyPhoto').textContent = faculty.photo;
-    paintStars('starContainer2', detailRatingStar);
-    document.getElementById('facultyDetailModal').classList.add('active');
-}
-function closeFacultyDetail() { document.getElementById('facultyDetailModal').classList.remove('active'); }
-function submitFacultyRating() {
-    if (detailRatingStar === 0) { showToast('⚠️ Please select a rating'); return; }
-    const ratings = getRatings();
-    ratings[currentDetailFaculty] = detailRatingStar;
-    saveRatings(ratings);
-    closeFacultyDetail();
-    showToast(`⭐ Rated ${currentDetailFaculty} with ${detailRatingStar} stars!`);
-}
-
-function paintStars(containerId, value) {
-    document.querySelectorAll('#' + containerId + ' .star').forEach(s => {
-        const val = parseInt(s.dataset.value);
-        s.classList.toggle('active', val <= value);
-        s.textContent = val <= value ? '⭐' : '☆';
-    });
-}
-
-document.addEventListener('click', function (e) {
-    if (!e.target.classList.contains('star')) return;
-    const container = e.target.closest('.stars');
-    if (!container) return;
-    const value = parseInt(e.target.dataset.value);
-    paintStars(container.id, value);
-    if (container.id === 'starContainer') homeRatingStar = value;
-    else if (container.id === 'starContainer2') detailRatingStar = value;
-});
-
-// ============================================================
-//  ABOUT DEVELOPER MODAL + MUSIC WIDGET
-//  Music is scoped entirely to this modal: it attempts to
-//  autoplay when the modal opens (falling back to "Tap play to
-//  listen" if the browser blocks autoplay), and it pauses and
-//  resets the moment the modal closes.
-// ============================================================
-let musicPlayerOpen = false;
-let seekDragging = false;
-
-function formatTime(sec) {
-    if (isNaN(sec) || sec === Infinity) return '0:00';
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-function setupMusicPlayer() {
-    const audio = document.getElementById('aboutAudio');
-    const icon = document.getElementById('aboutMusicIcon');
-    const artwork = document.getElementById('musicArtwork');
-    const playBtn = document.getElementById('musicPlayBtn');
-    const seek = document.getElementById('musicSeek');
-    const curTimeEl = document.getElementById('musicCurrentTime');
-    const durEl = document.getElementById('musicDuration');
-    const statusEl = document.getElementById('musicStatus');
-    if (!audio) return;
-
-    audio.addEventListener('loadedmetadata', () => {
-        durEl.textContent = formatTime(audio.duration);
-        seek.max = Math.floor(audio.duration) || 100;
-    });
-    audio.addEventListener('timeupdate', () => {
-        curTimeEl.textContent = formatTime(audio.currentTime);
-        if (!seekDragging) seek.value = Math.floor(audio.currentTime);
-    });
-    audio.addEventListener('play', () => {
-        icon.classList.add('playing');
-        artwork.classList.add('playing');
-        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        statusEl.textContent = 'Playing';
-    });
-    audio.addEventListener('pause', () => {
-        icon.classList.remove('playing');
-        artwork.classList.remove('playing');
-        playBtn.innerHTML = '<i class="fas fa-play"></i>';
-        if (statusEl.textContent !== 'Tap play to listen') statusEl.textContent = 'Paused';
-    });
-
-    seek.addEventListener('mousedown', () => { seekDragging = true; });
-    seek.addEventListener('touchstart', () => { seekDragging = true; });
-    seek.addEventListener('input', () => { curTimeEl.textContent = formatTime(seek.value); });
-    seek.addEventListener('change', () => {
-        audio.currentTime = seek.value;
-        seekDragging = false;
-    });
-}
-
-function toggleMusicPlayer() {
-    musicPlayerOpen = !musicPlayerOpen;
-    document.getElementById('aboutMusicPlayer').classList.toggle('open', musicPlayerOpen);
-}
-function closeMusicPlayer() {
-    musicPlayerOpen = false;
-    document.getElementById('aboutMusicPlayer').classList.remove('open');
-}
-function toggleMusicPlayback() {
-    const audio = document.getElementById('aboutAudio');
-    if (audio.paused) audio.play().catch(() => {}); else audio.pause();
-}
-
-function showAboutDeveloper() {
-    document.getElementById('aboutModal').classList.add('active');
-    const audio = document.getElementById('aboutAudio');
-    const statusEl = document.getElementById('musicStatus');
-    if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(() => {
-            if (statusEl) statusEl.textContent = 'Tap play to listen';
-        });
-    }
-}
-function closeAboutModal() {
-    document.getElementById('aboutModal').classList.remove('active');
-    const audio = document.getElementById('aboutAudio');
-    if (audio) {
-        audio.pause();
-        audio.currentTime = 0;
-    }
-    closeMusicPlayer();
-}
-
-// ============================================================
-//  TIMETABLE
-// ============================================================
-function showTimetable(branch, btn) {
-    document.querySelectorAll('.timetable-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-
-    const container = document.getElementById('timetableContainer');
-
-    if (branch === 'cse_a') {
-        // Real Sem 3 Sec A timetable — restore it if a placeholder overwrote it
-        container.innerHTML = `
-            <div class="timetable-grid-wrap">
-                <table class="timetable-grid">
-                    <thead>
-                        <tr><th>Day</th><th>9:00</th><th>9:55</th><th>11:00</th><th>11:55</th><th>2:15</th><th>3:10</th><th>4:05</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Mon</td><td>DSA</td><td>DSA</td><td>DDCO</td><td>OS</td><td colspan="3">DSL — A1 / GIT — A2</td></tr>
-                        <tr><td>Tue</td><td>DDCO</td><td>JAVA</td><td>DSA</td><td>DSP</td><td colspan="3">DSL — A2 / GIT — A1</td></tr>
-                        <tr><td>Wed</td><td>OS</td><td>JAVA</td><td>DSA</td><td>DDCO</td><td>DSP</td><td colspan="2">Community / Societal Project</td></tr>
-                        <tr><td>Thu</td><td>JAVA</td><td>OS</td><td>DSP</td><td>DDCO</td><td colspan="2">OOPS Lab</td><td>Yoga</td></tr>
-                        <tr><td>Fri</td><td>DSP</td><td>JAVA</td><td>OS</td><td>DDCO</td><td colspan="2">Library Visit</td><td>—</td></tr>
-                        <tr><td>Sat</td><td>OS</td><td>DSA</td><td>JAVA</td><td>DSP</td><td>—</td><td>—</td><td>—</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="timetable-note">Break 10:50–11:00 · Lunch 12:50–2:15 · Lab batches: A1 = 01–29, A2 = 30–58</p>`;
-        return;
+(function () {
+    'use strict';
+
+    // ---------- helpers ----------
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const pad = n => String(n).padStart(2, '0');
+    const KEY = 'elevenNotes_';
+    const get = (k, d) => { try { const v = localStorage.getItem(KEY + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+    const set = (k, v) => { try { localStorage.setItem(KEY + k, JSON.stringify(v)); } catch (e) { /* storage unavailable */ } };
+    const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    const dkey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const SUB = Object.fromEntries(SUBJECTS.map(s => [s.id, s]));
+    const DAYS = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    function fmtTime(min) {
+        const h = Math.floor(min / 60), m = min % 60, ap = h >= 12 ? 'PM' : 'AM';
+        return `${((h + 11) % 12) + 1}:${pad(m)} ${ap}`;
     }
 
-    container.innerHTML = `
-        <div class="placeholder-text">
-            <i class="fas fa-image"></i>
-            <p>📸 Timetable for <strong>${branch.toUpperCase()}</strong> not added yet</p>
-            <p class="sub">Add ${branch}_timetable.jpg to /images/, or send the schedule and it can be added directly.</p>
-        </div>`;
-}
-
-// ============================================================
-//  TABS (Social Hub) / TOOL TABS (Academic Tools)
-// ============================================================
-function switchTab(panelId, btn) {
-    const parent = btn.closest('.page-section');
-    parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(panelId).classList.add('active');
-    btn.classList.add('active');
-}
-function switchTool(panelId, btn) { switchTab(panelId, btn); }
-
-// ============================================================
-//  STUDY GROUPS
-// ============================================================
-function toggleGroup(btn) {
-    const joined = btn.classList.contains('btn-secondary');
-    btn.classList.toggle('btn-secondary', !joined);
-    btn.classList.toggle('btn-primary', joined);
-    btn.textContent = joined ? 'Join' : '✓ Joined';
-    showToast(joined ? '👋 Left the group' : '🎉 Joined the group!');
-}
-
-// ============================================================
-//  PLANNER / TASKS
-// ============================================================
-function addTask() {
-    const title = document.getElementById('taskTitleInput').value.trim();
-    if (!title) { showToast('⚠️ Enter a task title first'); return; }
-    const subject = document.getElementById('taskSubjectInput').value;
-    const priority = document.getElementById('taskPriorityInput').value;
-    const date = document.getElementById('taskDateInput').value || 'No date';
-
-    const list = document.getElementById('taskList');
-    const priorityClass = priority.toLowerCase();
-    const item = document.createElement('div');
-    item.className = 'task-item';
-    item.dataset.done = 'false';
-    item.innerHTML = `
-        <div class="task-check" onclick="toggleTask(this)"></div>
-        <div class="task-body">
-            <div class="task-title">${title}</div>
-            <div class="task-meta"><span class="task-pill ${priorityClass}">${priority.toUpperCase()}</span><span>${subject}</span><span>${date}</span></div>
-        </div>
-        <button class="task-del" onclick="deleteTask(this)"><i class="fas fa-trash"></i></button>`;
-    list.prepend(item);
-
-    document.getElementById('taskTitleInput').value = '';
-    updatePlannerProgress();
-    showToast('✅ Task added');
-}
-function toggleTask(checkEl) {
-    const item = checkEl.closest('.task-item');
-    const done = item.dataset.done === 'true';
-    item.dataset.done = (!done).toString();
-    checkEl.classList.toggle('done', !done);
-    checkEl.textContent = !done ? '✓' : '';
-    item.querySelector('.task-title').classList.toggle('done', !done);
-    updatePlannerProgress();
-}
-function deleteTask(btnEl) {
-    btnEl.closest('.task-item').remove();
-    updatePlannerProgress();
-    showToast('🗑️ Task removed');
-}
-function setTaskFilter(filter, btn) {
-    document.querySelectorAll('#page-planner .tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('#taskList .task-item').forEach(item => {
-        const done = item.dataset.done === 'true';
-        const show = filter === 'all' || (filter === 'done' && done) || (filter === 'pending' && !done);
-        item.style.display = show ? 'flex' : 'none';
-    });
-}
-function updatePlannerProgress() {
-    const items = document.querySelectorAll('#taskList .task-item');
-    const total = items.length;
-    const done = document.querySelectorAll('#taskList .task-item[data-done="true"]').length;
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    const fill = document.getElementById('plannerProgressFill');
-    if (fill) fill.style.width = pct + '%';
-    const label = document.getElementById('taskProgressLabel');
-    if (label) label.textContent = `${done} / ${total} done`;
-}
-
-// ============================================================
-//  NOTES (demo — Drive links only, no real file uploads)
-// ============================================================
-function toggleNoteForm() {
-    const card = document.getElementById('noteFormCard');
-    const isHidden = card.style.display === 'none' || card.style.display === '';
-    card.style.display = isHidden ? 'block' : 'none';
-    if (isHidden) document.getElementById('noteTitleInput').focus();
-}
-
-function addNote() {
-    const title = document.getElementById('noteTitleInput').value.trim();
-    const subject = document.getElementById('noteSubjectInput').value;
-    const link = document.getElementById('noteLinkInput').value.trim();
-    const desc = document.getElementById('noteDescInput').value.trim();
-
-    if (!title) { showToast('⚠️ Give the note a title first'); return; }
-    if (!link) { showToast('⚠️ Paste a Google Drive link first'); return; }
-
-    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const grid = document.getElementById('notesGrid');
-    const card = document.createElement('div');
-    card.className = 'note-card';
-    card.innerHTML = `
-        <div class="note-card-top">
-            <span class="note-subject-tag">${subject}</span>
-            <button class="note-del" onclick="deleteNote(this)" title="Remove"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="note-title">${title}</div>
-        ${desc ? `<div class="note-desc">${desc}</div>` : ''}
-        <div class="note-card-footer">
-            <span class="note-date">Added ${today}</span>
-            <a class="note-drive-link" href="${link}" target="_blank"><i class="fab fa-google-drive"></i> Open</a>
-        </div>`;
-    grid.prepend(card);
-
-    document.getElementById('noteTitleInput').value = '';
-    document.getElementById('noteLinkInput').value = '';
-    document.getElementById('noteDescInput').value = '';
-    toggleNoteForm();
-    showToast('📝 Note added');
-}
-
-function deleteNote(btn) {
-    btn.closest('.note-card').remove();
-    showToast('🗑️ Note removed');
-}
-
-// ============================================================
-//  ACADEMIC TOOLS — GPA CALCULATOR
-// ============================================================
-function addGpaRow() {
-    const wrap = document.getElementById('gpaRows');
-
-    const row = document.createElement('div');
-    row.className = 'gpa-row';
-
-    row.innerHTML = `
-        <input
-            type="text"
-            placeholder="Subject">
-
-        <input
-            type="number"
-            value="4"
-            min="1"
-            max="6">
-
-        <input
-            type="number"
-            value="0"
-            min="0"
-            max="100"
-            placeholder="Marks">
-
-        <button
-            class="gpa-del"
-            onclick="removeGpaRow(this)">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-
-    wrap.appendChild(row);
-    calcGpa();
-}
-
-
-function removeGpaRow(btn) {
-    btn.closest('.gpa-row').remove();
-    calcGpa();
-}
-
-
-function calcGpa() {
-
-    const rows =
-        document.querySelectorAll('#gpaRows .gpa-row');
-
-    let totalCredits = 0;
-    let totalPoints = 0;
-
-    rows.forEach(row => {
-
-        const inputs =
-            row.querySelectorAll('input');
-
-        const credit =
-            parseFloat(inputs[1]?.value) || 0;
-
-        const marks =
-            parseFloat(inputs[2]?.value) || 0;
-
-        let gradePoint = 0;
-
-        // Convert marks to grade points
-        if (marks >= 90) {
-            gradePoint = 10;
-        } else if (marks >= 80) {
-            gradePoint = 9;
-        } else if (marks >= 70) {
-            gradePoint = 8;
-        } else if (marks >= 60) {
-            gradePoint = 7;
-        } else if (marks >= 50) {
-            gradePoint = 6;
-        } else if (marks >= 40) {
-            gradePoint = 5;
-        } else {
-            gradePoint = 0;
-        }
-
-        totalCredits += credit;
-        totalPoints += credit * gradePoint;
-    });
-
-    const sgpa =
-        totalCredits
-            ? (totalPoints / totalCredits).toFixed(2)
-            : '--';
-
-    const resultEl =
-        document.getElementById('gpaResult');
-
-    if (resultEl) {
-        resultEl.textContent = sgpa;
-    }
-}
-
-
-// Recalculate when marks or credits are changed
-document.addEventListener('input', function (e) {
-
-    if (e.target.closest('#gpaRows')) {
-        calcGpa();
-    }
-
-});
-
-
-// Recalculate when a value changes
-document.addEventListener('change', function (e) {
-
-    if (e.target.closest('#gpaRows')) {
-        calcGpa();
-    }
-
-});
-
-// ============================================================
-//  ACADEMIC TOOLS — ATTENDANCE WHAT-IF
-// ============================================================
-function calcWhatIf() {
-    const conducted = parseFloat(document.getElementById('wiConducted').value) || 0;
-    const attended = parseFloat(document.getElementById('wiAttended').value) || 0;
-    const target = parseFloat(document.getElementById('wiTarget').value) || 85;
-    const future = parseFloat(document.getElementById('wiFuture').value) || 0;
-
-    const totalFuture = conducted + future;
-    const needed = Math.ceil((target / 100) * totalFuture - attended);
-    const box = document.getElementById('whatifResultBox');
-    const currentPct = conducted ? (attended / conducted * 100).toFixed(1) : '0.0';
-
-    if (needed <= 0) {
-        const bunkable = Math.max(Math.floor(attended - (target / 100) * totalFuture), 0);
-        box.innerHTML = `<div class="result-number">${bunkable}</div><div class="result-label">You can skip up to ${bunkable} of the next ${future} classes and stay at ${target}%+ (currently ${currentPct}%)</div>`;
-    } else if (needed > future) {
-        box.innerHTML = `<div class="result-number">⚠️</div><div class="result-label">Even attending all ${future} remaining classes won't reach ${target}% this term (currently ${currentPct}%)</div>`;
-    } else {
-        box.innerHTML = `<div class="result-number">${needed}</div><div class="result-label">Attend at least ${needed} of the next ${future} classes to reach ${target}% (currently ${currentPct}%)</div>`;
-    }
-}
-
-// ============================================================
-//  ACADEMIC TOOLS — EXAM COUNTDOWN
-// ============================================================
-let countdownTargetDate = examDates[0].date;
-let countdownInterval = null;
-
-function setCountdownExam(name, dateStr, btn) {
-    document.querySelectorAll('#toolExam .timetable-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    countdownTargetDate = dateStr;
-    document.getElementById('countdownCaption').textContent = `⏳ Countdown to ${name}`;
-    updateCountdown();
-}
-function updateCountdown() {
-    const target = new Date(countdownTargetDate).getTime();
-    const now = Date.now();
-    let diff = Math.max(target - now, 0);
-    const d = Math.floor(diff / 86400000); diff -= d * 86400000;
-    const h = Math.floor(diff / 3600000); diff -= h * 3600000;
-    const m = Math.floor(diff / 60000); diff -= m * 60000;
-    const s = Math.floor(diff / 1000);
-    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(v).padStart(2, '0'); };
-    set('cdDays', d); set('cdHours', h); set('cdMins', m); set('cdSecs', s);
-}
-
-// ============================================================
-//  SETTINGS
-// ============================================================
-function toggleNotifications() {
-    const btn = document.getElementById('notifToggleBtn');
-    const enabled = btn.textContent.trim() === 'Disable';
-    btn.textContent = enabled ? 'Enable' : 'Disable';
-    lsSet('notificationsEnabled', !enabled);
-    showToast(`🔔 Notifications ${!enabled ? 'enabled' : 'disabled'}`);
-}
-
-// ============================================================
-//  POMODORO TIMER (own page, fully functional)
-// ============================================================
-const POMO_DURATIONS = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
-const POMO_CIRCUMFERENCE = 597;
-
-let pomoState = {
-    mode: 'focus', secondsLeft: 25 * 60, totalSeconds: 25 * 60,
-    isRunning: false, isPaused: false, timerId: null, focusMinutes: 25,
-    sessions: [], sessionsToday: 0, totalFocusMinutes: 0, streak: 0, lastDate: null
-};
-
-function pomoLoadState() {
-    const saved = lsGet('pomodoroState', null);
-    if (saved) pomoState = { ...pomoState, ...saved, timerId: null, isRunning: false };
-    POMO_DURATIONS.focus = (pomoState.focusMinutes || 25) * 60;
-}
-function pomoSaveState() {
-    const toSave = { ...pomoState };
-    delete toSave.timerId;
-    lsSet('pomodoroState', toSave);
-}
-function pomoSyncModeButtons() {
-    document.querySelectorAll('.pomo-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === pomoState.mode));
-    const row = document.getElementById('pomoDurationRow');
-    if (row) row.style.display = pomoState.mode === 'focus' ? 'flex' : 'none';
-}
-function pomoSyncDurationButtons() {
-    document.querySelectorAll('.pomo-duration-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.mins) === pomoState.focusMinutes));
-}
-function pomoSetFocusDuration(mins, btn) {
-    if (pomoState.isRunning) {
-        if (!confirm('Timer is running. Reset and change focus length?')) return;
-        pomoStop();
-    }
-    pomoState.focusMinutes = mins;
-    POMO_DURATIONS.focus = mins * 60;
-    pomoSyncDurationButtons();
-    if (pomoState.mode === 'focus') {
-        pomoState.secondsLeft = POMO_DURATIONS.focus;
-        pomoState.totalSeconds = POMO_DURATIONS.focus;
-        pomoUpdateUI();
-    }
-    pomoSaveState();
-    showToast(`🎯 Focus length set to ${mins} minutes`);
-}
-function pomoSetMode(mode) {
-    if (pomoState.isRunning) {
-        if (!confirm('Timer is running. Reset and switch mode?')) return;
-        pomoStop();
-    }
-    pomoState.mode = mode;
-    pomoState.secondsLeft = POMO_DURATIONS[mode];
-    pomoState.totalSeconds = POMO_DURATIONS[mode];
-    pomoSyncModeButtons();
-    pomoUpdateUI();
-    pomoSaveState();
-}
-function pomoToggle() { pomoState.isRunning ? pomoPause() : pomoStart(); }
-function pomoStart() {
-    if (pomoState.secondsLeft <= 0) { pomoReset(); return; }
-    pomoState.isRunning = true;
-    pomoState.isPaused = false;
-    document.getElementById('pomoStartBtn').innerHTML = '<i class="fas fa-pause"></i>';
-    pomoState.timerId = setInterval(pomoTick, 1000);
-    pomoUpdateUI();
-}
-function pomoPause() {
-    pomoState.isRunning = false;
-    pomoState.isPaused = true;
-    clearInterval(pomoState.timerId);
-    document.getElementById('pomoStartBtn').innerHTML = '<i class="fas fa-play"></i>';
-    pomoUpdateUI();
-}
-function pomoStop() {
-    pomoState.isRunning = false;
-    pomoState.isPaused = false;
-    clearInterval(pomoState.timerId);
-    const btn = document.getElementById('pomoStartBtn');
-    if (btn) btn.innerHTML = '<i class="fas fa-play"></i>';
-}
-function pomoReset() {
-    pomoStop();
-    pomoState.secondsLeft = POMO_DURATIONS[pomoState.mode];
-    pomoState.totalSeconds = POMO_DURATIONS[pomoState.mode];
-    pomoUpdateUI();
-    pomoSaveState();
-}
-function pomoSkip() { pomoState.isRunning ? pomoCompleteSession() : pomoReset(); }
-function pomoTick() {
-    pomoState.secondsLeft--;
-    pomoUpdateUI();
-    if (pomoState.secondsLeft <= 0) pomoCompleteSession();
-}
-function pomoCompleteSession() {
-    pomoStop();
-    const modeLabel = pomoState.mode === 'focus' ? 'Focus' : pomoState.mode === 'short' ? 'Short Break' : 'Long Break';
-    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-    pomoState.sessions.unshift({ type: pomoState.mode, label: modeLabel, time: timeStr, duration: POMO_DURATIONS[pomoState.mode] / 60 });
-    if (pomoState.sessions.length > 50) pomoState.sessions.pop();
-
-    if (pomoState.mode === 'focus') {
-        pomoState.sessionsToday++;
-        pomoState.totalFocusMinutes += POMO_DURATIONS.focus / 60;
-        pomoUpdateStreak();
-    }
-
-    try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator(); const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.value = 880; osc.type = 'sine'; gain.gain.value = 0.15;
-        osc.start(); setTimeout(() => osc.stop(), 300);
-    } catch (e) { /* ignore */ }
-
-    pomoState.mode = pomoState.mode === 'focus' ? 'short' : 'focus';
-    pomoSyncModeButtons();
-    pomoState.secondsLeft = POMO_DURATIONS[pomoState.mode];
-    pomoState.totalSeconds = POMO_DURATIONS[pomoState.mode];
-
-    pomoUpdateUI();
-    pomoUpdateStats();
-    pomoRenderHistory();
-    pomoSaveState();
-
-    showToast(pomoState.mode === 'short' ? '🎯 Focus session complete! Starting short break.' : '☕ Break over! Ready to focus again?');
-}
-function pomoUpdateStreak() {
-    const today = new Date().toDateString();
-    if (!pomoState.lastDate) pomoState.streak = 1;
-    else if (pomoState.lastDate !== today) {
-        const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-        pomoState.streak = (pomoState.lastDate === yesterday.toDateString()) ? pomoState.streak + 1 : 1;
-    }
-    pomoState.lastDate = today;
-}
-function pomoUpdateUI() {
-    const timeEl = document.getElementById('pomoTimeDisplay');
-    if (!timeEl) return;
-    const mins = Math.floor(pomoState.secondsLeft / 60), secs = pomoState.secondsLeft % 60;
-    timeEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
-    const progress = 1 - (pomoState.secondsLeft / pomoState.totalSeconds);
-    document.getElementById('pomoProgress').style.strokeDashoffset = POMO_CIRCUMFERENCE * progress;
-
-    const labels = { focus: '🎯 Focus Time', short: '☕ Short Break', long: '🛋️ Long Break' };
-    document.getElementById('pomoStatusLabel').textContent = labels[pomoState.mode];
-
-    const badge = document.getElementById('pomoStatusBadge');
-    const badgeLabels = { focus: 'Focus', short: 'Break', long: 'Long Break' };
-    badge.textContent = badgeLabels[pomoState.mode];
-    badge.className = 'pomo-status-badge ' + (pomoState.mode === 'focus' ? 'focus' : 'break');
-    if (pomoState.isPaused) { badge.textContent = '⏸️ Paused'; badge.className = 'pomo-status-badge paused'; }
-
-    document.getElementById('pomoProgress').style.stroke = pomoState.mode === 'focus' ? '#4f7df3' : '#10b981';
-}
-function pomoUpdateStats() {
-    document.getElementById('pomoSessionsToday').textContent = pomoState.sessionsToday || 0;
-    document.getElementById('pomoTotalFocus').textContent = (pomoState.totalFocusMinutes || 0) + 'm';
-    document.getElementById('pomoStreak').textContent = pomoState.streak || 0;
-}
-function pomoRenderHistory() {
-    const el = document.getElementById('pomoSessionList');
-    if (!el) return;
-    if (!pomoState.sessions.length) {
-        el.innerHTML = '<div class="pomo-empty-sessions">No sessions yet. Start your first focus session! 🚀</div>';
-        return;
-    }
-    el.innerHTML = pomoState.sessions.slice(0, 15).map(s => {
-        const cls = s.type === 'focus' ? 'focus' : 'break';
-        const icon = s.type === 'focus' ? '🎯' : '☕';
-        return `<div class="pomo-session-item"><span class="session-type ${cls}">${icon} ${s.label}</span><span class="session-time">${s.time} · ${s.duration}m</span></div>`;
-    }).join('');
-}
-function pomoClearHistory() {
-    if (!pomoState.sessions.length) return;
-    if (confirm('Clear all session history?')) {
-        pomoState.sessions = [];
-        pomoRenderHistory();
-        pomoSaveState();
-        showToast('🗑️ History cleared');
-    }
-}
-document.addEventListener('keydown', function (e) {
-    const page = document.getElementById('page-pomodoro');
-    if (!page || !page.classList.contains('active')) return;
-    if (e.key === ' ' || e.key === 'Space') { e.preventDefault(); pomoToggle(); }
-    if (e.key === 'r') pomoReset();
-});
-
-// ============================================================
-//  PROGRESS BAR WIDTHS
-//  Elements like .fill, .goal-fill, .compare-bar-fill and
-//  .planner-progress-fill carry a data-target="NN" attribute
-//  that becomes their width.
-// ============================================================
-function initProgressBars() {
-    document.querySelectorAll('[data-target]').forEach(el => {
-        const target = el.getAttribute('data-target');
-        if (target !== null) {
-            requestAnimationFrame(() => { el.style.width = target + '%'; });
-        }
-    });
-}
-
-// ============================================================
-//  ELEVENNOTES PRO MODAL
-// ============================================================
-function openProModal() {
-    const modal = document.getElementById('proModal');
-    if (!modal) return;
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
-function closeProModal() {
-    const modal = document.getElementById('proModal');
-    if (!modal) return;
-    modal.classList.remove('show');
-    document.body.style.overflow = '';
-}
-
-// ============================================================
-//  ELEVENNOTES FEEDBACK MODAL
-// ============================================================
-let selectedFeedbackType = 'Suggestion';
-
-function openFeedbackModal() {
-    const modal = document.getElementById('feedbackModal');
-    if (!modal) return;
-    modal.classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
-function closeFeedbackModal() {
-    const modal = document.getElementById('feedbackModal');
-    if (!modal) return;
-    modal.classList.remove('show');
-    document.body.style.overflow = '';
-}
-
-// ============================================================
-//  ELEVENNOTES PROFILE AVATAR SYSTEM
-// ============================================================
-function openAvatarPicker() {
-    const picker = document.getElementById('avatarPicker');
-    if (!picker) return;
-    picker.classList.add('show');
-    updateSelectedAvatar();
-}
-
-function closeAvatarPicker() {
-    const picker = document.getElementById('avatarPicker');
-    if (!picker) return;
-    picker.classList.remove('show');
-}
-
-function selectAvatar(button) {
-    if (!button) return;
-    const avatarPath = button.dataset.avatar;
-    if (!avatarPath) return;
-
-    const profileImage = document.getElementById('profileAvatarImg');
-    if (profileImage) profileImage.src = avatarPath;
-
-    // Keep the sidebar avatar in sync with the profile page avatar
-    const sidebarImage = document.getElementById('sidebarAvatarImg');
-    if (sidebarImage) sidebarImage.src = avatarPath;
-
-    lsSet('profileAvatar', avatarPath);
-
-    document.querySelectorAll('.avatar-option').forEach(option => option.classList.remove('selected'));
-    button.classList.add('selected');
-
-    showToast('✅ Profile picture updated');
-}
-
-function updateSelectedAvatar() {
-    const savedAvatar = lsGet('profileAvatar', 'images/avatar-boy-1.jpeg');
-
-    const profileImage = document.getElementById('profileAvatarImg');
-    if (profileImage) profileImage.src = savedAvatar;
-
-    // Keep the sidebar avatar in sync with the profile page avatar
-    const sidebarImage = document.getElementById('sidebarAvatarImg');
-    if (sidebarImage) sidebarImage.src = savedAvatar;
-
-    document.querySelectorAll('.avatar-option').forEach(option => {
-        option.classList.toggle('selected', option.dataset.avatar === savedAvatar);
-    });
-}
-
-// ============================================================
-//  ELEVENNOTES PROFILE + IDENTITY SYSTEM
-//  Name, USN and bio are chosen by the student and stored only
-//  in this browser (LocalStorage). Defaults are neutral.
-// ============================================================
-const DEFAULT_NAME = 'Student';
-const DEFAULT_BIO = 'CSE Student | Tech Enthusiast | Building the future 🚀';
-
-function applyIdentity() {
-    const name = lsGet('profileName', DEFAULT_NAME);
-    const usn = lsGet('profileUsn', '');
-
-    const profileName = document.querySelector('.profile-name');
-    if (profileName) profileName.textContent = name;
-
-    const profileUsn = document.getElementById('profileUsn');
-    if (profileUsn) profileUsn.textContent = usn || 'Add your USN';
-
-    const header = document.getElementById('headerSubtitle');
-    if (header) header.textContent = usn ? `${name} · ${usn}` : `${name} · Add your USN in Profile`;
-
-    const sidebarName = document.querySelector('.sidebar-user .name');
-    if (sidebarName) sidebarName.textContent = name.toUpperCase();
-
-    const sidebarUsn = document.getElementById('sidebarUsn');
-    if (sidebarUsn) sidebarUsn.textContent = usn || 'Add your USN in Profile';
-}
-
-function editProfile() {
-    const modal = document.getElementById('editProfileModal');
-    const nameInput = document.getElementById('editProfileName');
-    const usnInput = document.getElementById('editProfileUsn');
-    const bioInput = document.getElementById('editProfileBio');
-    if (!modal || !nameInput || !bioInput) return;
-
-    nameInput.value = lsGet('profileName', DEFAULT_NAME);
-    if (usnInput) usnInput.value = lsGet('profileUsn', '');
-    bioInput.value = lsGet('profileBio', DEFAULT_BIO);
-
-    updateBioCharacterCount();
-    modal.classList.add('show');
-}
-
-function closeEditProfile() {
-    const modal = document.getElementById('editProfileModal');
-    if (modal) modal.classList.remove('show');
-}
-
-function saveProfileChanges() {
-    const nameInput = document.getElementById('editProfileName');
-    const usnInput = document.getElementById('editProfileUsn');
-    const bioInput = document.getElementById('editProfileBio');
-    if (!nameInput || !bioInput) return;
-
-    const profileName = nameInput.value.trim();
-    const profileUsn = usnInput ? usnInput.value.trim().toUpperCase() : '';
-    const profileBio = bioInput.value.trim();
-
-    if (!profileName) {
-        showToast('⚠️ Please enter your name');
-        nameInput.focus();
-        return;
-    }
-    if (!profileBio) {
-        showToast('⚠️ Please enter a bio');
-        bioInput.focus();
-        return;
-    }
-
-    lsSet('profileName', profileName);
-    lsSet('profileUsn', profileUsn);
-    lsSet('profileBio', profileBio);
-
-    const bioElement = document.querySelector('.profile-bio');
-    if (bioElement) bioElement.textContent = profileBio;
-    applyIdentity();
-
-    closeEditProfile();
-    showToast('✅ Profile updated successfully');
-}
-
-function updateBioCharacterCount() {
-    const bioInput = document.getElementById('editProfileBio');
-    const counter = document.getElementById('bioCharCount');
-    if (!bioInput || !counter) return;
-    counter.textContent = bioInput.value.length;
-}
-
-function loadSavedProfile() {
-    applyIdentity();
-    const savedBio = lsGet('profileBio', null);
-    if (savedBio) {
-        const bioElement = document.querySelector('.profile-bio');
-        if (bioElement) bioElement.textContent = savedBio;
-    }
-}
-
-document.addEventListener('input', function (event) {
-    if (event.target && event.target.id === 'editProfileBio') updateBioCharacterCount();
-});
-
-// ============================================================
-//  INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', function () {
-    loadTheme();
-    loadSavedProfile();
-    updateSelectedAvatar();
-
-
-    initProgressBars();
-    updatePlannerProgress();
-    calcGpa();
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
-    setupMusicPlayer();
-
-    pomoLoadState();
-    pomoSyncModeButtons();
-    pomoSyncDurationButtons();
-    pomoUpdateUI();
-    pomoUpdateStats();
-    pomoRenderHistory();
-
-
-    // Click-outside-to-close for the classic modals
-    const overlayCloseHandlers = {
-        aboutModal: closeAboutModal,
-        ratingModal: closeRatingModal,
-        facultyDetailModal: closeFacultyDetail,
-        detailModal: closeModal
+    // ---------- state ----------
+    const defaultProfile = { name: 'Student', usn: '', bio: 'CSE student. Building the future.', avatar: 'images/avatar-boy-1.jpeg' };
+    const S = {
+        profile: Object.assign({}, defaultProfile, get('profile', {})),
+        tasks: get('tasks', []),
+        notes: get('notes', []),
+        ratings: get('ratings', {}),
+        circles: get('circles', {}),
+        stats: Object.assign({ tasksDone: 0, focusSessions: 0, focusMinutes: 0, notesAdded: 0, sgpaUsed: false, whatifUsed: false, darkTried: false, bonusXp: 0, visits: [] }, get('stats', {})),
+        daily: get('daily', {}),
+        seen: get('seen', []),
+        customExams: get('customExams', []),
+        sgpa: get('sgpa', null),
+        focusMin: get('focusMin', 25),
+        sessions: get('sessions', [])
     };
-    Object.keys(overlayCloseHandlers).forEach(id => {
-        const overlay = document.getElementById(id);
-        if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) overlayCloseHandlers[id](); });
-    });
+    const ui = { studyTab: 'subjects', day: 0, noteFilter: 'all', planFilter: 'all', exam: 'last' };
 
-    // ---------- Pro modal ----------
-    const proTrigger = document.getElementById('proTrigger');
-    const proModal = document.getElementById('proModal');
-    const proModalClose = document.getElementById('proModalClose');
-    const proGotIt = document.getElementById('proGotIt');
+    const save = k => set(k, S[k]);
 
-    if (proTrigger) proTrigger.addEventListener('click', openProModal);
-    if (proModalClose) proModalClose.addEventListener('click', closeProModal);
-    if (proGotIt) proGotIt.addEventListener('click', closeProModal);
-    if (proModal) proModal.addEventListener('click', (e) => { if (e.target === proModal) closeProModal(); });
-
-    // ---------- Feedback modal ----------
-    const feedbackTrigger = document.getElementById('feedbackTrigger');
-    const feedbackModal = document.getElementById('feedbackModal');
-    const feedbackClose = document.getElementById('feedbackClose');
-    const feedbackCancel = document.getElementById('feedbackCancel');
-    const feedbackSubmit = document.getElementById('feedbackSubmit');
-    const feedbackText = document.getElementById('feedbackText');
-    const feedbackCharCount = document.getElementById('feedbackCharCount');
-    const feedbackTypes = document.querySelectorAll('.feedback-type');
-
-    if (feedbackTrigger) {
-        feedbackTrigger.addEventListener('click', (e) => { e.preventDefault(); openFeedbackModal(); });
-    }
-    if (feedbackClose) feedbackClose.addEventListener('click', closeFeedbackModal);
-    if (feedbackCancel) feedbackCancel.addEventListener('click', closeFeedbackModal);
-
-    feedbackTypes.forEach(function (button) {
-        button.addEventListener('click', function () {
-            feedbackTypes.forEach(item => item.classList.remove('active'));
-            button.classList.add('active');
-            selectedFeedbackType = button.dataset.feedbackType;
-        });
-    });
-
-    if (feedbackText) {
-        feedbackText.addEventListener('input', function () {
-            if (feedbackCharCount) feedbackCharCount.textContent = feedbackText.value.length;
-        });
+    // ---------- toast & sheet ----------
+    let toastTimer;
+    function toast(msg) {
+        const t = $('#toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
     }
 
-    if (feedbackSubmit) {
-        feedbackSubmit.addEventListener('click', function () {
-            const message = feedbackText ? feedbackText.value.trim() : '';
-            if (!message) {
-                if (feedbackText) feedbackText.focus();
-                return;
+    let lastFocus = null;
+    function openSheet(title, html) {
+        lastFocus = document.activeElement;
+        $('#sheetTitle').textContent = title;
+        $('#sheetBody').innerHTML = html;
+        $('#sheetWrap').classList.add('open');
+        $('#sheetWrap').setAttribute('aria-hidden', 'false');
+        document.body.classList.add('lock');
+        const first = $('#sheetBody input, #sheetBody textarea, #sheetBody select');
+        if (first && window.matchMedia('(pointer: fine)').matches) first.focus();
+    }
+    function closeSheet() {
+        $('#sheetWrap').classList.remove('open');
+        $('#sheetWrap').setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('lock');
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    // ---------- progress, XP, badges ----------
+    function calcStreak() {
+        const seen = new Set(S.stats.visits);
+        const d = new Date();
+        let n = 0;
+        while (seen.has(dkey(d))) { n++; d.setDate(d.getDate() - 1); }
+        return n;
+    }
+    function derived() {
+        return Object.assign({}, S.stats, {
+            rated: Object.values(S.ratings).filter(Boolean).length,
+            circles: Object.values(S.circles).filter(Boolean).length,
+            streak: calcStreak(),
+            profileDone: S.profile.name !== 'Student' && !!S.profile.usn
+        });
+    }
+    function xpTotal() {
+        const d = derived();
+        return d.tasksDone * 10 + d.focusSessions * 20 + d.notesAdded * 10 + d.rated * 5 + d.visits.length * 5 + d.bonusXp;
+    }
+    function levelInfo() {
+        const xp = xpTotal(), lvl = Math.floor(xp / 100) + 1;
+        return { xp, lvl, into: xp % 100, title: LEVELS[Math.min(lvl - 1, LEVELS.length - 1)] };
+    }
+    function today() {
+        const k = dkey();
+        if (!S.daily || S.daily.date !== k) { S.daily = { date: k, tasksDone: 0, focusSessions: 0, added: 0, claimed: [] }; save('daily'); }
+        return S.daily;
+    }
+    function checkProgress() {
+        const d = today(), s = derived();
+        CHALLENGES.forEach(c => {
+            if (c.val(d) >= c.goal && !d.claimed.includes(c.id)) {
+                d.claimed.push(c.id);
+                S.stats.bonusXp += c.xp;
+                toast(`Challenge done: ${c.text}. +${c.xp} XP`);
             }
-            window.open('https://forms.gle/qynARnBJsS2odeTd8', '_blank');
         });
+        save('daily'); save('stats');
+        const earned = BADGES.filter(b => b.val(derived()) >= b.goal).map(b => b.id);
+        const fresh = earned.filter(id => !S.seen.includes(id));
+        if (fresh.length) {
+            S.seen = S.seen.concat(fresh); save('seen');
+            const b = BADGES.find(x => x.id === fresh[0]);
+            setTimeout(() => toast(`New badge: ${b.icon} ${b.name}`), 400);
+        }
+    }
+    function bump(field, n = 1, dailyField) {
+        S.stats[field] += n;
+        if (dailyField) today()[dailyField] += 1;
+        save('stats'); save('daily');
+        checkProgress();
     }
 
-    if (feedbackModal) {
-        feedbackModal.addEventListener('click', (e) => { if (e.target === feedbackModal) closeFeedbackModal(); });
+    // ---------- timetable helpers ----------
+    function entryInfo(e) {
+        if (e.sub) { const s = SUB[e.sub]; return { title: s.name, sub: s.faculty, kind: s.kind }; }
+        return { title: e.title, sub: e.detail, kind: e.kind || 'free' };
+    }
+    function dueInfo(d) {
+        if (!d) return null;
+        const t = new Date(d + 'T00:00:00'), t0 = new Date(); t0.setHours(0, 0, 0, 0);
+        const diff = Math.round((t - t0) / 864e5);
+        if (diff < 0) return { text: `Overdue by ${-diff} day${diff === -1 ? '' : 's'}`, late: true };
+        if (diff === 0) return { text: 'Due today' };
+        if (diff === 1) return { text: 'Due tomorrow' };
+        if (diff < 7) return { text: `Due in ${diff} days` };
+        return { text: 'Due ' + t.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) };
+    }
+    const examList = () => EXAMS.concat(S.customExams);
+    function nextExam() {
+        const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+        return examList().map(e => ({ e, days: Math.round((new Date(e.date + 'T00:00:00') - t0) / 864e5) }))
+            .filter(x => x.days >= 0).sort((a, b) => a.days - b.days)[0] || null;
     }
 
-    // ---------- ESC closes Pro / Feedback modals ----------
-    document.addEventListener('keydown', function (e) {
-        if (e.key !== 'Escape') return;
-        if (proModal && proModal.classList.contains('show')) closeProModal();
-        if (feedbackModal && feedbackModal.classList.contains('show')) closeFeedbackModal();
+    // ============================================================
+    //  PAGES
+    // ============================================================
+    const R = {};
+
+    // ---------- HOME ----------
+    R.home = function () {
+        const now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes();
+        const h = now.getHours();
+        const greet = h < 5 ? 'Still up' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 21 ? 'Good evening' : 'Good night';
+        const named = S.profile.name !== 'Student';
+        const first = S.profile.name.split(' ')[0];
+        const list = TIMETABLE[now.getDay()] || [];
+        const nextIdx = list.findIndex(e => e.t > nowMin);
+        const classes = list.map((e, i) => {
+            const info = entryInfo(e), end = e.t + e.n * PERIOD_MIN;
+            const cur = nowMin >= e.t && nowMin < end, past = nowMin >= end, nxt = i === nextIdx;
+            const cls = cur ? 'now' : nxt ? 'next' : past ? 'past' : '';
+            const tag = cur ? '<span class="tag">Now</span>' : nxt ? '<span class="tag">Up next</span>' : '';
+            const title = (cur || nxt) ? `<span class="hl">${esc(info.title)}</span>` : esc(info.title);
+            return `<li class="cls ${cls}"><div class="cls-time">${fmtTime(e.t)}</div><div><div class="cls-title">${title}${tag}</div><div class="cls-sub">${esc(info.sub)}</div></div></li>`;
+        }).join('');
+        const sheet = list.length
+            ? `<ul class="classes">${classes}</ul>`
+            : `<div class="empty"><b>No classes today</b>Enjoy the break, or get ahead on your tasks.</div>`;
+
+        const pending = S.tasks.filter(t => !t.done);
+        const soon = pending.filter(t => t.date).sort((a, b) => a.date.localeCompare(b.date))[0];
+        const ne = nextExam(), d = today();
+        const doneCh = CHALLENGES.filter(c => c.val(d) >= c.goal).length;
+
+        $('#page-home').innerHTML = `
+            <h1 class="hello">${greet}${named ? ', ' + esc(first) : ''}<small>${named ? 'Here is your day.' : 'Add your name in the Me tab to personalise this.'}</small></h1>
+            <div class="today">
+                <div class="today-top">
+                    <div class="date-big"><b>${now.getDate()}</b><span>${now.toLocaleDateString('en-IN', { weekday: 'short' })}<br>${now.toLocaleDateString('en-IN', { month: 'short' })}</span></div>
+                    <div class="streak-chip">🔥 ${Math.max(calcStreak(), 1)} day streak</div>
+                </div>
+                ${sheet}
+            </div>
+            <div class="flat">
+                <button data-act="nav" data-to="plan"><span class="em">📋</span><span class="grow"><b>${pending.length ? pending.length + ' task' + (pending.length > 1 ? 's' : '') + ' to do' : 'Nothing pending'}</b><span>${soon ? esc(soon.title) + ', ' + dueInfo(soon.date).text.toLowerCase() : (pending.length ? 'Open your list' : 'Add a task to plan your week')}</span></span><span class="go">›</span></button>
+                ${ne ? `<button data-act="tool" data-tab="count" data-exam="${esc(ne.e.id)}"><span class="em">⏳</span><span class="grow"><b>${ne.days === 0 ? 'Today: ' : ne.days + (ne.days === 1 ? ' day to ' : ' days to ')}${esc(ne.e.name)}</b><span>Open the countdown</span></span><span class="go">›</span></button>` : ''}
+                <button data-act="nav" data-to="me"><span class="em">🎯</span><span class="grow"><b>Today's challenges: ${doneCh} of ${CHALLENGES.length}</b><span>Finish them to earn XP and badges</span></span><span class="go">›</span></button>
+            </div>
+            <h2 class="sec-title">Jump to</h2>
+            <div class="tiles">
+                <button class="tile" data-act="nav" data-to="faculty"><span>👩‍🏫</span>Faculty</button>
+                <button class="tile" data-act="study-tab" data-tab="notes"><span>📝</span>Notes</button>
+                <button class="tile" data-act="tool" data-tab="focus"><span>🍅</span>Focus</button>
+                <button class="tile" data-act="tool" data-tab="sgpa"><span>🎓</span>SGPA</button>
+                <button class="tile" data-act="nav" data-to="events"><span>🎉</span>Events</button>
+                <button class="tile" data-act="nav" data-to="community"><span>💬</span>Community</button>
+            </div>`;
+    };
+
+    // ---------- STUDY ----------
+    R.study = function () {
+        const tabs = [['subjects', 'Subjects'], ['timetable', 'Timetable'], ['notes', 'Notes']];
+        let body = '';
+        if (ui.studyTab === 'subjects') {
+            body = `<div class="flat">${SUBJECTS.map(s => `
+                <button data-act="subject" data-id="${s.id}">
+                    <span class="code-chip ${s.kind}">${s.id}</span>
+                    <span class="grow"><b>${esc(s.name)}</b><span>${esc(s.faculty)}</span></span><span class="go">›</span>
+                </button>`).join('')}</div>
+                <p class="fine">${SUBJECTS.length} subjects, Semester 3. Tap a subject to rate the faculty or add a note or task.</p>`;
+        } else if (ui.studyTab === 'timetable') {
+            const dow = new Date().getDay(), todayIdx = dow === 0 ? 1 : dow;
+            if (!ui.day) ui.day = todayIdx;
+            const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+            const list = TIMETABLE[ui.day] || [];
+            body = `<div class="day-chips" role="tablist">${[1, 2, 3, 4, 5, 6].map(d => `<button class="chip ${ui.day === d ? 'on' : ''}" data-act="day" data-d="${d}">${DAYS[d]}${d === dow ? ' •' : ''}</button>`).join('')}</div>
+                <div class="flat">${list.map(e => {
+                    const info = entryInfo(e), end = e.t + e.n * PERIOD_MIN;
+                    const live = ui.day === dow && nowMin >= e.t && nowMin < end;
+                    return `<div class="row"><span class="code-chip ${info.kind}" style="min-width:76px">${fmtTime(e.t)}</span><span class="grow"><b>${live ? `<span class="hl">${esc(info.title)}</span><span class="tag">Now</span>` : esc(info.title)}</b><span>${esc(info.sub)}</span></span></div>`;
+                }).join('')}</div>
+                <p class="fine">Section A. Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: A1 is roll numbers 01 to 29, A2 is 30 to 58.</p>`;
+        } else {
+            const f = ui.noteFilter;
+            const notes = S.notes.filter(n => f === 'all' || n.subject === f);
+            const opts = ['all'].concat(SUBJECTS.map(s => s.id), ['General']);
+            body = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div class="chips" style="margin:0">${opts.map(o => `<button class="chip ${f === o ? 'on' : ''}" data-act="note-filter" data-f="${o}">${o === 'all' ? 'All' : o}</button>`).join('')}</div></div>
+                <div style="margin:12px 0"><button class="btn primary small" data-act="add-note">Add a note</button></div>
+                ${notes.length ? `<div class="flat">${notes.map(n => `
+                    <div class="note">
+                        <div class="note-top"><span class="code-chip">${esc(n.subject)}</span><span class="date-sm">${esc(n.date)}</span></div>
+                        <h3>${esc(n.title)}</h3>${n.desc ? `<p>${esc(n.desc)}</p>` : ''}
+                        <div class="note-actions">${n.link ? `<a class="link-btn" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">Open link</a>` : ''}<button class="del" data-act="del-note" data-id="${n.id}">Delete</button></div>
+                    </div>`).join('')}</div>`
+                    : `<div class="sheet-paper empty"><b>No notes here yet</b>Save a Google Drive link to your notes, organised by subject.</div>`}`;
+        }
+        $('#page-study').innerHTML = `<h1 class="ptitle">Study</h1>
+            <div class="seg" role="tablist">${tabs.map(([id, label]) => `<button role="tab" class="${ui.studyTab === id ? 'on' : ''}" data-act="study-tab" data-tab="${id}">${label}</button>`).join('')}</div>${body}`;
+    };
+
+    // ---------- PLAN ----------
+    R.plan = function () {
+        const total = S.tasks.length, done = S.tasks.filter(t => t.done).length;
+        const pct = total ? Math.round(done / total * 100) : 0;
+        let list = S.tasks.slice();
+        if (ui.planFilter === 'todo') list = list.filter(t => !t.done);
+        if (ui.planFilter === 'done') list = list.filter(t => t.done);
+        list.sort((a, b) => (a.done - b.done) || ((a.date || '9999').localeCompare(b.date || '9999')));
+        const rank = { High: 'high', Medium: '', Low: 'low' };
+        $('#page-plan').innerHTML = `<h1 class="ptitle">Plan</h1>
+            <div class="plan-head"><div class="donut" style="--p:${pct}"><span>${pct}%</span></div>
+                <div><h2>${total ? `${done} of ${total} done` : 'A clear list'}</h2><p class="muted">${total ? (done === total ? 'Everything is ticked. Nice work.' : `${total - done} left to go.`) : 'Add your first task to get started.'}</p></div></div>
+            <div class="chips">${[['all', 'All'], ['todo', 'To do'], ['done', 'Done']].map(([id, l]) => `<button class="chip ${ui.planFilter === id ? 'on' : ''}" data-act="plan-filter" data-f="${id}">${l}</button>`).join('')}</div>
+            ${list.length ? `<ul class="tasks">${list.map(t => {
+                const due = dueInfo(t.date);
+                return `<li class="task ${t.done ? 'done' : ''}">
+                    <button class="check" data-act="toggle" data-id="${t.id}" aria-label="${t.done ? 'Mark as not done' : 'Mark as done'}">✓</button>
+                    <div class="task-body"><div class="task-title">${esc(t.title)}</div>
+                        <div class="task-meta"><span class="pill">${esc(t.subject)}</span><span class="pill ${rank[t.priority] || ''}">${esc(t.priority)}</span>${due ? `<span class="${due.late && !t.done ? 'pill late' : ''}">${due.text}</span>` : ''}</div></div>
+                    <button class="del" data-act="del-task" data-id="${t.id}" aria-label="Delete task">✕</button></li>`;
+            }).join('')}</ul>`
+                : `<div class="sheet-paper empty" style="margin-top:12px"><b>${total ? 'Nothing in this list' : 'No tasks yet'}</b>${total ? 'Try another filter.' : 'Tap Add task to plan your first assignment or revision.'}</div>`}
+            <button class="fab" data-act="add-task"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add task</button>`;
+    };
+
+    // ---------- ME ----------
+    R.me = function () {
+        const p = S.profile, L = levelInfo(), d = today(), s = derived();
+        $('#page-me').innerHTML = `
+            <div class="me-head">
+                <button class="avatar-ring" style="--p:${L.into}" data-act="avatar" aria-label="Change profile picture"><img src="${esc(p.avatar)}" alt="" /><span class="lvl">Lv ${L.lvl}</span></button>
+                <div><div class="me-name">${esc(p.name)}</div>${p.usn ? `<span class="usn-pill">${esc(p.usn)}</span>` : `<button class="usn-pill" data-act="edit-profile">Add your USN</button>`}</div>
+            </div>
+            <p class="bio">${esc(p.bio)}</p>
+            <div class="me-actions"><button class="btn ghost small" data-act="edit-profile">Edit profile</button><button class="btn ghost small" data-act="avatar">Change picture</button></div>
+
+            <div class="stats4">
+                <div><b>${Math.max(s.streak, 1)}</b><span>day streak</span></div>
+                <div><b>${s.tasksDone}</b><span>tasks done</span></div>
+                <div><b>${s.focusMinutes}</b><span>focus min</span></div>
+                <div><b>${S.notes.length}</b><span>notes</span></div>
+            </div>
+
+            <div class="level-card">
+                <div class="level-row"><b>Level ${L.lvl}: ${L.title}</b><span>${L.xp} XP</span></div>
+                <div class="bar"><i style="width:${L.into}%"></i></div>
+                <small>${100 - L.into} XP to level ${L.lvl + 1}. Finish tasks, focus sessions and notes to earn XP.</small>
+            </div>
+
+            <h2 class="sec-title">Today's challenges</h2>
+            <div class="flat">${CHALLENGES.map(c => {
+                const v = Math.min(c.val(d), c.goal), done = v >= c.goal;
+                return `<div class="challenge ${done ? 'done' : ''}"><span class="em">${done ? '🎉' : c.icon}</span><div class="grow"><b>${c.text}</b><div class="bar"><i style="width:${v / c.goal * 100}%"></i></div></div><span class="xp">${done ? 'Done' : v + '/' + c.goal + ' · +' + c.xp + ' XP'}</span></div>`;
+            }).join('')}</div>
+
+            <h2 class="sec-title">Badges <span class="muted">${BADGES.filter(b => b.val(s) >= b.goal).length} of ${BADGES.length}</span></h2>
+            <div class="badges">${BADGES.map(b => {
+                const v = b.val(s), got = v >= b.goal;
+                return `<button class="badge ${got ? '' : 'locked'}" data-act="badge" data-id="${b.id}"><span class="medal">${b.icon}</span><b>${b.name}</b><small>${got ? 'Earned' : (b.goal > 1 ? Math.min(v, b.goal) + '/' + b.goal : b.how)}</small></button>`;
+            }).join('')}</div>
+
+            <h2 class="sec-title">Settings</h2>
+            <div class="flat">
+                <button data-act="theme"><span class="em">🌙</span><span class="grow"><b>Dark mode</b><span>Easier on the eyes at night</span></span><span class="switch ${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}"></span></button>
+                <button data-act="feedback"><span class="em">💬</span><span class="grow"><b>Send feedback</b><span>Suggest a feature or report a bug</span></span><span class="go">›</span></button>
+                <button data-act="pro"><span class="em">✨</span><span class="grow"><b>ElevenNotes Pro</b><span>Plan, revise, own your progress</span></span><span class="go">›</span></button>
+                <button data-act="nav" data-to="about"><span class="em">👨‍💻</span><span class="grow"><b>About the developer</b><span>Meet Viresh</span></span><span class="go">›</span></button>
+                <button data-act="reset"><span class="em">🗑️</span><span class="grow"><b class="danger-text">Reset my data</b><span>Clears everything saved in this browser</span></span></button>
+            </div>`;
+    };
+
+    // ---------- FACULTY ----------
+    function starsHtml(name) {
+        const r = S.ratings[name] || 0;
+        return `<span class="stars" data-for="${esc(name)}">${[1, 2, 3, 4, 5].map(v => `<button class="${v <= r ? 'on' : ''}" data-act="rate" data-name="${esc(name)}" data-v="${v}" aria-label="Rate ${v} of 5">★</button>`).join('')}</span>`;
+    }
+    R.faculty = function () {
+        $('#page-faculty').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Faculty</h1></div>
+            <p class="muted" style="margin:-6px 2px 12px">Your ratings stay private on this device.</p>
+            <div class="flat">${FACULTY.map(f => `<div class="fac"><span class="em" style="font-size:30px">${f.emoji}</span><div class="grow"><b>${esc(f.name)}</b><span class="s">${esc(f.subject)} · ${esc(f.dept)}</span></div>${starsHtml(f.name)}</div>`).join('')}</div>`;
+    };
+
+    // ---------- EVENTS ----------
+    R.events = function () {
+        $('#page-events').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Events</h1></div>
+            <div class="ev-intro"><h2>VIDHARA 2K26–27</h2><p>CSE department tech fest, 16 to 18 October.</p></div>
+            ${EVENTS.map(g => `<div class="ev-group"><h3>${g.icon} ${esc(g.title)}<small>${esc(g.when)}</small></h3>
+                <div class="flat" style="margin-top:0">${g.items.map(i => `<div class="ev-item"><span class="em">${i.icon}</span><div><b>${esc(i.name)}</b><span>${esc(i.desc)}</span></div></div>`).join('')}</div></div>`).join('')}`;
+    };
+
+    // ---------- COMMUNITY ----------
+    R.community = function () {
+        $('#page-community').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Community</h1></div>
+            <div class="wa"><span class="badge-un">Unofficial</span><h2>RYMEC Student Community</h2>
+                <p>A student-run WhatsApp group for discussions, opportunities, academics and hackathons.</p>
+                <a href="https://chat.whatsapp.com/KBKiFgUl8qg9V8QRRrGOhE" target="_blank" rel="noopener noreferrer">Join on WhatsApp</a></div>
+            <h2 class="sec-title">Study circles</h2>
+            <div class="flat" style="margin-top:0">${STUDY_CIRCLES.map(c => `<div class="row"><span class="em">${c.emoji}</span><span class="grow"><b>${esc(c.name)}</b><span>${esc(c.topic)}</span></span>
+                <button class="btn small ${S.circles[c.id] ? 'ghost' : 'primary'}" data-act="circle" data-id="${c.id}">${S.circles[c.id] ? 'Joined' : 'Join'}</button></div>`).join('')}</div>
+            <p class="fine">Study circles are a personal checklist on this device. Use the WhatsApp community to meet other students.</p>`;
+    };
+
+    // ============================================================
+    //  ROUTER
+    // ============================================================
+    const PAGES = ['home', 'study', 'plan', 'tools', 'me', 'faculty', 'events', 'community', 'about'];
+    const NAV_OF = { faculty: 'home', events: 'home', community: 'home', about: 'me' };
+    let current = 'home';
+
+    let routedHash = null;
+    function route() {
+        routedHash = location.hash;
+        let p = (location.hash || '#home').slice(1);
+        if (!PAGES.includes(p)) p = 'home';
+        current = p;
+        closeSheet();
+        $$('.page').forEach(el => el.classList.toggle('on', el.dataset.page === p));
+        $$('.dock a').forEach(a => a.classList.toggle('on', a.dataset.nav === (NAV_OF[p] || p)));
+        document.body.dataset.view = p;
+        renderCurrent();
+        window.scrollTo(0, 0);
+    }
+    function renderCurrent() { if (R[current]) R[current](); }
+    function go(p) { location.hash = '#' + p; route(); }
+
+    // ============================================================
+    //  TOOLS
+    // ============================================================
+    function showTool(tab) {
+        $$('#toolTabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+        $$('.tool').forEach(t => t.classList.toggle('on', t.id === 'tool-' + tab));
+        if (tab === 'count') renderCountdown();
+        if (tab === 'att') calcWhatIf(false);
+        if (tab === 'sgpa') calcSgpa(false);
+        if (tab === 'focus') timerUI();
+    }
+
+    // ----- SGPA -----
+    function sgpaRows() {
+        if (!S.sgpa) S.sgpa = SUBJECTS.map(s => ({ name: s.name, credits: s.credits, marks: '' }));
+        return S.sgpa;
+    }
+    function renderSgpaRows() {
+        $('#sgpaRows').innerHTML = sgpaRows().map((r, i) => `<div class="sgpa-row">
+            <input data-f="name" data-i="${i}" value="${esc(r.name)}" aria-label="Subject name" placeholder="Subject" />
+            <input data-f="credits" data-i="${i}" type="number" inputmode="decimal" min="0" max="10" value="${esc(r.credits)}" aria-label="Credits" />
+            <input data-f="marks" data-i="${i}" type="number" inputmode="decimal" min="0" max="100" value="${esc(r.marks)}" placeholder="/100" aria-label="Marks out of 100" />
+            <button class="rm" data-act="sgpa-rm" data-i="${i}" aria-label="Remove subject">✕</button></div>`).join('');
+        calcSgpa(false);
+    }
+    function gradeOf(m) { return GRADES.find(g => m >= g.min); }
+    function calcSgpa(userInput) {
+        let cr = 0, pts = 0, n = 0;
+        sgpaRows().forEach(r => {
+            const m = parseFloat(r.marks), c = parseFloat(r.credits);
+            if (isNaN(m) || isNaN(c) || c <= 0 || m < 0 || m > 100) return;
+            cr += c; pts += c * gradeOf(m).p; n++;
+        });
+        $('#sgpaVal').textContent = n ? (pts / cr).toFixed(2) : '--';
+        $('#sgpaNote').textContent = n ? `${cr} credits across ${n} subject${n > 1 ? 's' : ''}` : 'Add marks to see your SGPA';
+        if (n && userInput && !S.stats.sgpaUsed) { S.stats.sgpaUsed = true; save('stats'); checkProgress(); }
+    }
+
+    // ----- attendance planner -----
+    function calcWhatIf(userInput) {
+        const v = id => parseFloat($('#' + id).value);
+        const held = v('wiHeld'), att = v('wiAtt'), target = v('wiTarget'), future = v('wiFuture');
+        const big = $('#wiVal'), note = $('#wiNote');
+        if ([held, att, target, future].some(isNaN) || held < 0 || att < 0 || future < 0 || target <= 0 || target > 100) { big.textContent = '--'; note.textContent = 'Fill in all four boxes with valid numbers.'; return; }
+        if (att > held) { big.textContent = '--'; note.textContent = 'Classes attended cannot be more than classes held.'; return; }
+        const cur = held ? att / held * 100 : 0, total = held + future;
+        const need = Math.max(0, Math.ceil(target / 100 * total - att - 1e-9));
+        if (need > future) {
+            big.textContent = '😬';
+            note.textContent = `Even if you attend all ${future} remaining classes you will reach ${total ? ((att + future) / total * 100).toFixed(1) : 0}%, below your ${target}% target. You are at ${cur.toFixed(1)}% now.`;
+        } else {
+            const skip = future - need;
+            big.textContent = skip;
+            note.textContent = skip === future && future > 0 ? `You can miss all ${future} remaining classes and still stay at ${target}% or more. You are at ${cur.toFixed(1)}% now.`
+                : skip === 0 ? `Attend every one of the next ${future} classes to reach ${target}%. You are at ${cur.toFixed(1)}% now.`
+                : `You can miss up to ${skip} of the next ${future} classes and still finish at ${target}% or more. You are at ${cur.toFixed(1)}% now.`;
+        }
+        if (userInput && !S.stats.whatifUsed) { S.stats.whatifUsed = true; save('stats'); checkProgress(); }
+    }
+
+    // ----- countdown -----
+    function renderCountdown() {
+        const list = examList();
+        if (!list.find(e => e.id === ui.exam)) ui.exam = list[0].id;
+        $('#cdChips').innerHTML = list.map(e => `<button class="chip ${e.id === ui.exam ? 'on' : ''}" data-act="cd-pick" data-id="${esc(e.id)}">${esc(e.name)}${e.custom ? ` <span class="x" data-act="cd-rm" data-id="${esc(e.id)}" role="button" aria-label="Remove ${esc(e.name)}">✕</span>` : ''}</button>`).join('');
+        tickCountdown();
+    }
+    function tickCountdown() {
+        if (current !== 'tools') return;
+        const e = examList().find(x => x.id === ui.exam);
+        if (!e) return;
+        $('#cdName').textContent = 'Countdown to ' + e.name;
+        let diff = Math.max(new Date(e.date + 'T00:00:00') - Date.now(), 0);
+        const d = Math.floor(diff / 864e5); diff -= d * 864e5;
+        const h = Math.floor(diff / 36e5); diff -= h * 36e5;
+        const m = Math.floor(diff / 6e4); diff -= m * 6e4;
+        $('#cdD').textContent = pad(d); $('#cdH').textContent = pad(h); $('#cdM').textContent = pad(m); $('#cdS').textContent = pad(Math.floor(diff / 1000));
+    }
+
+    // ----- focus timer -----
+    const C_RING = 552.92;
+    const T = { mode: 'focus', running: false, endAt: 0, left: 0, total: 0, id: null };
+    const modeSecs = m => m === 'focus' ? S.focusMin * 60 : m === 'short' ? 300 : 900;
+    function timerReset(mode) {
+        clearInterval(T.id); T.running = false;
+        T.mode = mode || T.mode; T.total = T.left = modeSecs(T.mode);
+        timerUI();
+    }
+    function timerUI() {
+        const left = T.running ? Math.max(0, Math.round((T.endAt - Date.now()) / 1000)) : T.left;
+        $('#tClock').textContent = `${pad(Math.floor(left / 60))}:${pad(left % 60)}`;
+        $('#ringFg').style.strokeDashoffset = C_RING * (1 - (T.total ? left / T.total : 1));
+        $('.ring').classList.toggle('brk', T.mode !== 'focus');
+        $('#tLabel').textContent = T.running ? (T.mode === 'focus' ? 'Stay with it' : 'Take a breather') : (left < T.total ? 'Paused' : (T.mode === 'focus' ? 'Ready to focus' : 'Break time'));
+        $('#tGo').textContent = T.running ? 'Pause' : (left < T.total ? 'Resume' : 'Start');
+        $$('#modeTabs button').forEach(b => b.classList.toggle('on', b.dataset.mode === T.mode));
+        $$('#lenChips .chip').forEach(b => b.classList.toggle('on', +b.dataset.min === S.focusMin));
+        $('#lenChips').style.display = T.mode === 'focus' ? '' : 'none';
+        $('#tToday').textContent = today().focusSessions;
+        $('#tTotal').textContent = S.stats.focusMinutes;
+    }
+    function timerToggle() {
+        if (T.running) { T.left = Math.max(0, Math.round((T.endAt - Date.now()) / 1000)); clearInterval(T.id); T.running = false; }
+        else { T.running = true; T.endAt = Date.now() + T.left * 1000; T.id = setInterval(timerTick, 250); }
+        timerUI();
+    }
+    function timerTick() {
+        timerUI();
+        if (Date.now() >= T.endAt) timerDone();
+    }
+    function beep() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)(), o = ctx.createOscillator(), g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination); o.frequency.value = 880; g.gain.value = 0.12; o.start(); setTimeout(() => { o.stop(); ctx.close(); }, 350);
+        } catch (e) { /* sound not available */ }
+    }
+    function timerDone() {
+        const wasFocus = T.mode === 'focus';
+        clearInterval(T.id); T.running = false;
+        beep();
+        S.sessions.unshift({ type: T.mode, min: Math.round(T.total / 60), at: Date.now() });
+        S.sessions = S.sessions.slice(0, 30); save('sessions');
+        if (wasFocus) { S.stats.focusSessions++; S.stats.focusMinutes += Math.round(T.total / 60); today().focusSessions++; save('stats'); save('daily'); }
+        timerReset(wasFocus ? 'short' : 'focus');
+        toast(wasFocus ? 'Focus session done. Take a short break.' : 'Break over. Ready for the next one?');
+        if (wasFocus) checkProgress();
+    }
+
+    // ============================================================
+    //  SHEETS (forms)
+    // ============================================================
+    const subjectOptions = sel => ['General'].concat(SUBJECTS.map(s => s.id)).map(id => `<option value="${id}" ${id === sel ? 'selected' : ''}>${id === 'General' ? 'General' : id + ' · ' + SUB[id].name}</option>`).join('');
+
+    function taskSheet(subject) {
+        openSheet('Add a task', `<form data-form="task">
+            <label>What needs doing?<input name="title" maxlength="80" required placeholder="e.g. Submit Java assignment" /></label>
+            <label>Subject<select name="subject">${subjectOptions(subject || 'General')}</select></label>
+            <label>Priority</label>
+            <div class="prio">${['High', 'Medium', 'Low'].map(p => `<label class="chip ${p === 'Medium' ? 'on' : ''}" style="margin:0"><input type="radio" name="priority" value="${p}" ${p === 'Medium' ? 'checked' : ''} style="display:none" />${p}</label>`).join('')}</div>
+            <label>Due date <span class="opt">(optional)</span><input type="date" name="date" /></label>
+            <button class="btn primary block" type="submit">Save task</button></form>`);
+    }
+    function noteSheet(subject) {
+        openSheet('Add a note', `<form data-form="note">
+            <label>Title<input name="title" maxlength="80" required placeholder="e.g. DSA unit 3 summary" /></label>
+            <label>Subject<select name="subject">${subjectOptions(subject || 'General')}</select></label>
+            <label>Link <span class="opt">(optional)</span><input type="url" name="link" placeholder="https://drive.google.com/..." /></label>
+            <label>Short description <span class="opt">(optional)</span><textarea name="desc" rows="2" maxlength="140"></textarea></label>
+            <button class="btn primary block" type="submit">Save note</button></form>`);
+    }
+    function profileSheet() {
+        const p = S.profile;
+        openSheet('Edit profile', `<form data-form="profile">
+            <label>Name<input name="name" maxlength="40" required value="${esc(p.name === 'Student' ? '' : p.name)}" placeholder="Your name" /></label>
+            <label>USN <span class="opt">(optional)</span><input name="usn" maxlength="20" value="${esc(p.usn)}" placeholder="e.g. 3VC25CS000" autocapitalize="characters" /></label>
+            <label>Bio<textarea name="bio" rows="3" maxlength="120" placeholder="A line about you">${esc(p.bio)}</textarea></label>
+            <button class="btn primary block" type="submit">Save profile</button></form>`);
+    }
+    function avatarSheet() {
+        const list = ['boy-1', 'boy-2', 'boy-3', 'girl-1', 'girl-2', 'girl-3'].map(n => `images/avatar-${n}.jpeg`);
+        openSheet('Choose a picture', `<div class="avatars">${list.map(src => `<button class="${S.profile.avatar === src ? 'on' : ''}" data-act="pick-avatar" data-src="${src}" aria-label="Choose this avatar"><img src="${src}" alt="" /></button>`).join('')}</div>`);
+    }
+    function proSheet() {
+        openSheet('ElevenNotes Pro', `<p class="muted">Plan. Revise. Own it.</p>
+            <div class="pro-list"><div><b>P</b><span><strong>Plan</strong><br>Organise your studies, tasks and goals.</span></div>
+            <div><b>R</b><span><strong>Revise</strong><br>Review and track your progress.</span></div>
+            <div><b>O</b><span><strong>Own it</strong><br>Take control of your student journey.</span></div></div>
+            <p><strong>Pro is not a paid plan.</strong> It is free for every student.</p>
+            <button class="btn primary block" data-act="close-sheet">Got it</button>`);
+    }
+    function feedbackSheet() {
+        openSheet('Send feedback', `<p>Found a bug, or want a new feature? Tell us in a short form. It opens in a new tab.</p>
+            <a class="btn primary block" href="https://forms.gle/qynARnBJsS2odeTd8" target="_blank" rel="noopener noreferrer">Open the feedback form</a>`);
+    }
+    function subjectSheet(id) {
+        const s = SUB[id];
+        const nNotes = S.notes.filter(n => n.subject === id).length, nTasks = S.tasks.filter(t => t.subject === id && !t.done).length;
+        openSheet(s.id, `<p><b>${esc(s.name)}</b><br><span class="muted">${esc(s.code)}</span></p>
+            <p class="muted" style="margin-bottom:4px">Taught by ${esc(s.faculty)}</p>${starsHtml(s.faculty)}
+            <p class="muted" style="margin-top:12px">${nNotes} note${nNotes === 1 ? '' : 's'}, ${nTasks} open task${nTasks === 1 ? '' : 's'}</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="note-for" data-id="${id}">Add a note</button><button class="btn ghost" data-act="task-for" data-id="${id}">Add a task</button></div>`);
+    }
+    function examSheet() {
+        openSheet('Add your own date', `<form data-form="exam">
+            <label>Name<input name="name" maxlength="30" required placeholder="e.g. Lab internal" /></label>
+            <label>Date<input type="date" name="date" required /></label>
+            <button class="btn primary block" type="submit">Save date</button></form>`);
+    }
+
+    const FORMS = {
+        task(f) {
+            const title = f.title.value.trim(); if (!title) return;
+            S.tasks.unshift({ id: uid(), title, subject: f.subject.value, priority: f.priority.value, date: f.date.value || '', done: false, counted: false });
+            save('tasks'); bump('tasksDone', 0, 'added');
+            closeSheet(); renderCurrent(); toast('Task saved');
+        },
+        note(f) {
+            const title = f.title.value.trim(), link = f.link.value.trim();
+            if (!title) return;
+            if (link && !/^https?:\/\//i.test(link)) { toast('Paste a full link that starts with https://'); return; }
+            S.notes.unshift({ id: uid(), title, subject: f.subject.value, link, desc: f.desc.value.trim(), date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) });
+            save('notes'); bump('notesAdded', 1, 'added');
+            closeSheet(); renderCurrent(); toast('Note saved');
+        },
+        profile(f) {
+            const name = f.name.value.trim(); if (!name) return;
+            S.profile.name = name; S.profile.usn = f.usn.value.trim().toUpperCase(); S.profile.bio = f.bio.value.trim() || defaultProfile.bio;
+            save('profile'); checkProgress();
+            closeSheet(); renderCurrent(); toast('Profile updated');
+        },
+        exam(f) {
+            const name = f.name.value.trim(); if (!name || !f.date.value) return;
+            const id = 'c' + uid(); S.customExams.push({ id, name, date: f.date.value, custom: true });
+            save('customExams'); ui.exam = id; closeSheet(); renderCountdown(); toast('Date added');
+        }
+    };
+
+    // ============================================================
+    //  ACTIONS
+    // ============================================================
+    const A = {
+        theme() {
+            const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.dataset.theme = next; set('theme', next);
+            if (next === 'dark' && !S.stats.darkTried) { S.stats.darkTried = true; save('stats'); checkProgress(); }
+            if (current === 'me') renderCurrent();
+        },
+        pro: proSheet, feedback: feedbackSheet, avatar: avatarSheet, 'edit-profile': profileSheet,
+        'close-sheet': closeSheet,
+        back() { if (history.length > 1) history.back(); else go('home'); },
+        nav(t) { go(t.dataset.to); },
+        tool(t) {
+            go('tools'); showTool(t.dataset.tab);
+            if (t.dataset.exam) { ui.exam = t.dataset.exam; renderCountdown(); }
+        },
+        tooltab(t) { showTool(t.dataset.tab); },
+        'study-tab'(t) { ui.studyTab = t.dataset.tab; if (current !== 'study') go('study'); else renderCurrent(); },
+        day(t) { ui.day = +t.dataset.d; renderCurrent(); },
+        subject(t) { subjectSheet(t.dataset.id); },
+        'note-for'(t) { noteSheet(t.dataset.id); },
+        'task-for'(t) { taskSheet(t.dataset.id); },
+        'add-note'() { noteSheet(); },
+        'add-task'() { taskSheet(); },
+        'note-filter'(t) { ui.noteFilter = t.dataset.f; renderCurrent(); },
+        'del-note'(t) { S.notes = S.notes.filter(n => n.id !== t.dataset.id); save('notes'); renderCurrent(); toast('Note deleted'); },
+        'plan-filter'(t) { ui.planFilter = t.dataset.f; renderCurrent(); },
+        toggle(t) {
+            const task = S.tasks.find(x => x.id === t.dataset.id); if (!task) return;
+            task.done = !task.done; save('tasks');
+            if (task.done && !task.counted) { task.counted = true; save('tasks'); bump('tasksDone', 1, 'tasksDone'); toast('Task done. +10 XP'); }
+            renderCurrent();
+        },
+        'del-task'(t) { S.tasks = S.tasks.filter(x => x.id !== t.dataset.id); save('tasks'); renderCurrent(); toast('Task deleted'); },
+        'pick-avatar'(t) { S.profile.avatar = t.dataset.src; save('profile'); closeSheet(); renderCurrent(); toast('Picture updated'); },
+        badge(t) {
+            const b = BADGES.find(x => x.id === t.dataset.id), got = b.val(derived()) >= b.goal;
+            toast(got ? `${b.icon} ${b.name}: earned` : `${b.icon} ${b.name}: ${b.how}`);
+        },
+        rate(t) {
+            const name = t.dataset.name, v = +t.dataset.v;
+            S.ratings[name] = S.ratings[name] === v ? 0 : v; save('ratings');
+            $$(`.stars[data-for="${CSS.escape(name)}"] button`).forEach((b, i) => b.classList.toggle('on', i < S.ratings[name]));
+            checkProgress();
+        },
+        circle(t) {
+            const id = t.dataset.id; S.circles[id] = !S.circles[id]; save('circles'); checkProgress(); renderCurrent();
+            toast(S.circles[id] ? 'Joined the study circle' : 'Left the study circle');
+        },
+        'sgpa-add'() { sgpaRows().push({ name: '', credits: 3, marks: '' }); save('sgpa'); renderSgpaRows(); },
+        'sgpa-rm'(t) { sgpaRows().splice(+t.dataset.i, 1); save('sgpa'); renderSgpaRows(); },
+        'cd-pick'(t) { ui.exam = t.dataset.id; renderCountdown(); },
+        'cd-add': examSheet,
+        'cd-rm'(t, e) {
+            e.stopPropagation();
+            S.customExams = S.customExams.filter(x => x.id !== t.dataset.id); save('customExams');
+            if (ui.exam === t.dataset.id) ui.exam = EXAMS[0].id; renderCountdown();
+        },
+        mode(t) { if (T.running && !confirm('The timer is running. Switch and reset it?')) return; timerReset(t.dataset.mode); },
+        len(t) { if (T.running && !confirm('The timer is running. Change length and reset it?')) return; S.focusMin = +t.dataset.min; set('focusMin', S.focusMin); timerReset('focus'); },
+        't-toggle': timerToggle,
+        't-reset'() { timerReset(); },
+        't-skip'() { timerReset(T.mode === 'focus' ? 'short' : 'focus'); },
+        music() {
+            const a = $('#lofi'), b = $('#musicBtn');
+            if (a.paused) { a.play().then(() => { b.classList.add('playing'); b.setAttribute('aria-pressed', 'true'); $('#musicState').textContent = 'Playing, tap to pause'; }).catch(() => toast('Could not play the music')); }
+            else { a.pause(); b.classList.remove('playing'); b.setAttribute('aria-pressed', 'false'); $('#musicState').textContent = 'Tap to play'; }
+        },
+        reset() {
+            if (!confirm('Reset everything saved in this browser? Your tasks, notes, ratings and progress will be removed.')) return;
+            try { Object.keys(localStorage).filter(k => k.indexOf(KEY) === 0).forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ }
+            location.hash = '#home'; location.reload();
+        }
+    };
+
+    document.addEventListener('click', e => {
+        const t = e.target.closest('[data-act]');
+        if (!t) return;
+        const fn = A[t.dataset.act];
+        if (fn) { fn(t, e); }
     });
+    document.addEventListener('submit', e => {
+        const f = e.target.closest('form[data-form]');
+        if (!f) return;
+        e.preventDefault();
+        FORMS[f.dataset.form](f);
+    });
+    document.addEventListener('change', e => {
+        if (e.target.name === 'priority') $$('.prio .chip').forEach(c => c.classList.toggle('on', c.contains(e.target) && e.target.checked));
+    });
+    document.addEventListener('input', e => {
+        const el = e.target;
+        if (el.closest('#sgpaRows')) { sgpaRows()[+el.dataset.i][el.dataset.f] = el.value; save('sgpa'); calcSgpa(true); }
+        if (el.closest('#tool-att')) calcWhatIf(true);
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+    window.addEventListener('hashchange', () => { if (location.hash !== routedHash) route(); });
 
-    console.log('📘 ElevenNotes ready — all local, no network calls.');
-});
-
-// ============================================================
-//  EXPOSE GLOBALLY (for inline onclick="..." handlers)
-// ============================================================
-window.toggleSidebar = toggleSidebar;
-window.closeSidebar = closeSidebar;
-window.showPage = showPage;
-window.scrollToSection = scrollToSection;
-window.toggleTheme = toggleTheme;
-window.showToast = showToast;
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.showStreakDetails = showStreakDetails;
-window.closeStreakDetails = closeStreakDetails;
-window.showAllSubjects = showAllSubjects;
-window.showCollegeEvents = showCollegeEvents;
-window.openRatingModal = openRatingModal;
-window.closeRatingModal = closeRatingModal;
-window.submitRating = submitRating;
-window.openFacultyDetail = openFacultyDetail;
-window.closeFacultyDetail = closeFacultyDetail;
-window.submitFacultyRating = submitFacultyRating;
-window.showAboutDeveloper = showAboutDeveloper;
-window.closeAboutModal = closeAboutModal;
-window.toggleMusicPlayer = toggleMusicPlayer;
-window.closeMusicPlayer = closeMusicPlayer;
-window.toggleMusicPlayback = toggleMusicPlayback;
-window.showTimetable = showTimetable;
-window.editProfile = editProfile;
-window.closeEditProfile = closeEditProfile;
-window.saveProfileChanges = saveProfileChanges;
-window.openAvatarPicker = openAvatarPicker;
-window.closeAvatarPicker = closeAvatarPicker;
-window.selectAvatar = selectAvatar;
-window.openProModal = openProModal;
-window.closeProModal = closeProModal;
-window.openFeedbackModal = openFeedbackModal;
-window.closeFeedbackModal = closeFeedbackModal;
-window.switchTab = switchTab;
-window.switchTool = switchTool;
-window.toggleGroup = toggleGroup;
-window.addTask = addTask;
-window.toggleTask = toggleTask;
-window.deleteTask = deleteTask;
-window.setTaskFilter = setTaskFilter;
-window.toggleNoteForm = toggleNoteForm;
-window.addNote = addNote;
-window.deleteNote = deleteNote;
-window.addGpaRow = addGpaRow;
-window.removeGpaRow = removeGpaRow;
-window.calcGpa = calcGpa;
-window.calcWhatIf = calcWhatIf;
-window.setCountdownExam = setCountdownExam;
-window.toggleNotifications = toggleNotifications;
-window.pomoSetMode = pomoSetMode;
-window.pomoSetFocusDuration = pomoSetFocusDuration;
-window.pomoToggle = pomoToggle;
-window.pomoReset = pomoReset;
-window.pomoSkip = pomoSkip;
-window.pomoClearHistory = pomoClearHistory;
+    // ============================================================
+    //  START
+    // ============================================================
+    const todayKey = dkey();
+    if (!S.stats.visits.includes(todayKey)) { S.stats.visits.push(todayKey); S.stats.visits = S.stats.visits.slice(-400); save('stats'); }
+    today();
+    timerReset('focus');
+    renderSgpaRows();
+    setInterval(tickCountdown, 1000);
+    setInterval(() => { if (current === 'home') R.home(); }, 60000);
+    route();
+    checkProgress();
+})();

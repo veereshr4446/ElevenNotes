@@ -214,10 +214,10 @@
             <h2 class="sec-title">Jump to</h2>
             <div class="tiles">
                 <button class="tile" data-act="nav" data-to="faculty"><span>👩‍🏫</span>Faculty</button>
-                <button class="tile" data-act="study-tab" data-tab="notes"><span>📝</span>Notes</button>
                 <button class="tile" data-act="tool" data-tab="focus"><span>🍅</span>Focus</button>
                 <button class="tile" data-act="tool" data-tab="sgpa"><span>🎓</span>SGPA</button>
                 <button class="tile" data-act="study-tab" data-tab="library"><span>🔗</span>Shared</button>
+                <button class="tile" data-act="nav" data-to="events"><span>🎉</span>Events</button>
                 <button class="tile" data-act="nav" data-to="community"><span>💬</span>Community</button>
             </div>`;
     };
@@ -413,6 +413,7 @@
          ['📈', 'Attendance planner', 'Plan how many classes to attend', () => { go('tools'); showTool('att'); }, 'percent bunk'],
          ['⏳', 'Exam countdown', 'Days left for your dates', () => { go('tools'); showTool('count'); }, 'exam date'],
          ['🍅', 'Focus timer', 'Pomodoro study timer', () => { go('tools'); showTool('focus'); }, 'pomodoro'],
+         ['🎉', 'Events', 'College fests and activities. Coming soon', () => go('events'), 'fest'],
          ['💬', 'Community', 'Join the community', () => go('community')],
          ['🏅', 'Badges and level', 'Your profile and progress', () => go('me'), 'xp challenge streak profile'],
          ['👨‍💻', 'About the developer', 'Meet Viresh', () => go('about')]
@@ -526,6 +527,12 @@
             <div class="flat">${FACULTY.map(f => `<div class="fac"><span class="em" style="font-size:30px">${f.emoji}</span><div class="grow"><b>${esc(f.name)}</b><span class="s">${esc(f.subject)} · ${esc(f.dept)}</span></div>${starsHtml(f.name)}</div>`).join('')}</div>`;
     };
 
+    // ---------- EVENTS ----------
+    R.events = function () {
+        $('#page-events').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Events</h1></div>
+            <div class="sheet-paper soon"><span class="soon-tag">Coming soon</span><h2>Events are on the way</h2><p>College fests, workshops and activities will appear here. Check back soon.</p></div>`;
+    };
+
     // ---------- COMMUNITY ----------
     R.community = function () {
         $('#page-community').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Community</h1></div>
@@ -541,8 +548,8 @@
     // ============================================================
     //  ROUTER
     // ============================================================
-    const PAGES = ['home', 'study', 'plan', 'tools', 'me', 'faculty', 'community', 'about'];
-    const NAV_OF = { faculty: 'home', community: 'home', about: 'me' };
+    const PAGES = ['home', 'study', 'plan', 'tools', 'me', 'faculty', 'events', 'community', 'about'];
+    const NAV_OF = { faculty: 'home', events: 'home', community: 'home', about: 'me' };
     let current = 'home';
 
     let routedHash = null;

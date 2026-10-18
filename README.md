@@ -12,7 +12,7 @@ A free, phone-first student planner built with plain HTML, CSS and JavaScript. N
 - **Plan**: tasks with subject, priority and due date
 - **Tools**: SGPA calculator (VTU grade scale), attendance planner, exam countdown with your own dates, focus timer
 - **Me**: your name, USN, bio and picture, plus XP levels, daily challenges and 13 badges
-- **Faculty** ratings, **Events**, **Community** link, dark mode
+- **Faculty** ratings, **Community** link, dark mode
 
 ## Privacy
 - Everything you enter is saved only in your own browser (LocalStorage). Nothing is sent anywhere.

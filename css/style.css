@@ -365,7 +365,7 @@ body[data-view="plan"] .fab { display: flex; }
 .switch.on::after { transform: translateX(20px); }
 .danger-text { color: var(--coral); }
 
-/* ---------- FACULTY, EVENTS, COMMUNITY ---------- */
+/* ---------- FACULTY, COMMUNITY ---------- */
 .stars { display: inline-flex; gap: 2px; }
 .stars button { font-size: 24px; line-height: 1; color: var(--line); padding: 4px 2px; }
 .stars button.on { color: #f2b705; }
@@ -375,19 +375,7 @@ body[data-view="plan"] .fab { display: flex; }
 .fac b { display: block; font-weight: 700; }
 .fac span.s { font-size: 13.5px; color: var(--ink-2); }
 
-.ev-intro { background: var(--brand); color: #fff; border-radius: 26px; padding: 20px; }
-[data-theme="dark"] .ev-intro { background: var(--brand-soft); color: var(--ink); }
-.ev-intro h2 { font-size: 24px; }
-.ev-intro p { opacity: .92; margin-top: 4px; font-size: 14.5px; }
-.ev-group { margin-top: 22px; }
-.ev-group h3 { font-family: var(--font-head); font-size: 20px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 2px 8px; }
-.ev-group h3 small { font-family: var(--font-body); font-size: 13px; color: var(--ink-2); font-weight: 600; }
-.ev-item { display: flex; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
-.ev-item:last-child { border-bottom: 0; }
-.ev-item .em { font-size: 26px; width: 36px; text-align: center; flex: none; }
-.ev-item b { display: block; font-weight: 700; }
-.ev-item span { font-size: 14px; color: var(--ink-2); }
-
+[data-theme="dark"] 
 .wa { background: linear-gradient(135deg, #1f8f5a, #12643e); color: #fff; border-radius: 26px; padding: 22px 20px; }
 .wa .badge-un { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, .2); margin-bottom: 8px; }
 .wa h2 { font-size: 24px; }

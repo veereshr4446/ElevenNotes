@@ -210,7 +210,7 @@
                 <button class="tile" data-act="study-tab" data-tab="notes"><span>📝</span>Notes</button>
                 <button class="tile" data-act="tool" data-tab="focus"><span>🍅</span>Focus</button>
                 <button class="tile" data-act="tool" data-tab="sgpa"><span>🎓</span>SGPA</button>
-                <button class="tile" data-act="nav" data-to="events"><span>🎉</span>Events</button>
+                <button class="tile" data-act="study-tab" data-tab="library"><span>🔗</span>Shared</button>
                 <button class="tile" data-act="nav" data-to="community"><span>💬</span>Community</button>
             </div>`;
     };
@@ -406,7 +406,6 @@
          ['📈', 'Attendance planner', 'Plan how many classes to attend', () => { go('tools'); showTool('att'); }, 'percent bunk'],
          ['⏳', 'Exam countdown', 'Days left for your dates', () => { go('tools'); showTool('count'); }, 'exam date'],
          ['🍅', 'Focus timer', 'Pomodoro study timer', () => { go('tools'); showTool('focus'); }, 'pomodoro'],
-         ['🎉', 'Events', 'College fest', () => go('events'), 'vidhara fest'],
          ['💬', 'Community', 'Join the community', () => go('community')],
          ['🏅', 'Badges and level', 'Your profile and progress', () => go('me'), 'xp challenge streak profile'],
          ['👨‍💻', 'About the developer', 'Meet Viresh', () => go('about')]
@@ -520,14 +519,6 @@
             <div class="flat">${FACULTY.map(f => `<div class="fac"><span class="em" style="font-size:30px">${f.emoji}</span><div class="grow"><b>${esc(f.name)}</b><span class="s">${esc(f.subject)} · ${esc(f.dept)}</span></div>${starsHtml(f.name)}</div>`).join('')}</div>`;
     };
 
-    // ---------- EVENTS ----------
-    R.events = function () {
-        $('#page-events').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Events</h1></div>
-            <div class="ev-intro"><h2>VIDHARA 2K26–27</h2><p>CSE department tech fest, 16 to 18 October.</p></div>
-            ${EVENTS.map(g => `<div class="ev-group"><h3>${g.icon} ${esc(g.title)}<small>${esc(g.when)}</small></h3>
-                <div class="flat" style="margin-top:0">${g.items.map(i => `<div class="ev-item"><span class="em">${i.icon}</span><div><b>${esc(i.name)}</b><span>${esc(i.desc)}</span></div></div>`).join('')}</div></div>`).join('')}`;
-    };
-
     // ---------- COMMUNITY ----------
     R.community = function () {
         $('#page-community').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Community</h1></div>
@@ -543,8 +534,8 @@
     // ============================================================
     //  ROUTER
     // ============================================================
-    const PAGES = ['home', 'study', 'plan', 'tools', 'me', 'faculty', 'events', 'community', 'about'];
-    const NAV_OF = { faculty: 'home', events: 'home', community: 'home', about: 'me' };
+    const PAGES = ['home', 'study', 'plan', 'tools', 'me', 'faculty', 'community', 'about'];
+    const NAV_OF = { faculty: 'home', community: 'home', about: 'me' };
     let current = 'home';
 
     let routedHash = null;

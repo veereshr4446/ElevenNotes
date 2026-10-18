@@ -94,32 +94,6 @@ const GRADES = [
     { min: 40, g: 'P',  p: 4 },  { min: 0,  g: 'F',  p: 0 }
 ];
 
-// College fest, shown on the Events page
-const EVENTS = [
-    { icon: '💻', title: 'Technical events', when: '16 to 18 October', items: [
-        { icon: '🌐', name: 'Web Development', desc: 'Build a web solution for a real-world problem using AI. Tools, models, databases and APIs are allowed.' },
-        { icon: '🧠', name: 'Mind Hack', desc: 'Logic traps, pattern puzzles and misleading clues.' },
-        { icon: '🐞', name: 'Coding and Debugging', desc: 'Debugging Duel: fix errors in a given program against the clock. Reverse Coding: write the program that gives the output.' },
-        { icon: '🏆', name: 'Tech Quiz', desc: 'Programming, OS, DBMS, cybersecurity, gadgets and a rapid-fire round.' },
-        { icon: '🔎', name: 'Web Search Hunt', desc: 'A multiplayer online hunt: solve riddles and puzzles using the web.' },
-        { icon: '💡', name: 'Tech Pitch', desc: 'Pitch a technology idea to the judges: problem, innovation, solution and feasibility.' }
-    ] },
-    { icon: '🎮', title: 'Games', when: '16 to 18 October', items: [
-        { icon: '🗺️', name: 'Treasure Hunt', desc: 'Find clues, solve challenges and race to the treasure.' },
-        { icon: '🔥', name: 'Free Fire', desc: 'Competitive gaming, open to all branches.' },
-        { icon: '🎯', name: 'BGMI', desc: 'Competitive multiplayer gaming, open to all branches.' }
-    ] },
-    { icon: '🎭', title: 'Group and fun activities', when: '17 October', items: [
-        { icon: '💃', name: 'Flash Mob', desc: 'A dance performance with group and individual entries.' },
-        { icon: '💪', name: 'Tug of War', desc: 'Team contest between departments. Department of DS and CY.' },
-        { icon: '🏏', name: 'Mini Cricket', desc: 'Short-format cricket between teams. Department of DS and CY.' },
-        { icon: '🏸', name: 'Badminton or Football', desc: 'Pick one and play with students from other branches.' }
-    ] },
-    { icon: '👗', title: 'Ethnic Day', when: '18 October', items: [
-        { icon: '📸', name: 'Ethnic Day and Photo Booth', desc: 'Wear traditional outfits and capture the memories.' }
-    ] }
-];
-
 const STUDY_CIRCLES = [
     { id: 'ai',     emoji: '🤖', name: 'AI Study Circle',     topic: 'Intro to AI' },
     { id: 'python', emoji: '🐍', name: 'Python Coders Club',  topic: 'Python programming' },

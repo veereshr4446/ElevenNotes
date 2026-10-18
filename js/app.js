@@ -40,7 +40,7 @@
         focusMin: get('focusMin', 25),
         sessions: get('sessions', [])
     };
-    const ui = { studyTab: 'subjects', day: 0, noteFilter: 'all', planFilter: 'all', exam: 'last' };
+    const ui = { lib: { items: [], loaded: false, loading: false, error: false }, libFilter: 'all', studyTab: 'subjects', day: 0, noteFilter: 'all', planFilter: 'all', exam: 'last' };
 
     const save = k => set(k, S[k]);
 
@@ -54,8 +54,9 @@
         toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
     }
 
-    let lastFocus = null;
+    let lastFocus = null, sheetGuard = null;
     function openSheet(title, html) {
+        sheetGuard = null;
         lastFocus = document.activeElement;
         $('#sheetTitle').textContent = title;
         $('#sheetBody').innerHTML = html;
@@ -66,6 +67,8 @@
         if (first && window.matchMedia('(pointer: fine)').matches) first.focus();
     }
     function closeSheet() {
+        if (sheetGuard && !sheetGuard()) return;
+        sheetGuard = null;
         $('#sheetWrap').classList.remove('open');
         $('#sheetWrap').setAttribute('aria-hidden', 'true');
         document.body.classList.remove('lock');
@@ -206,7 +209,7 @@
 
     // ---------- STUDY ----------
     R.study = function () {
-        const tabs = [['subjects', 'Subjects'], ['timetable', 'Timetable'], ['notes', 'Notes']];
+        const tabs = [['subjects', 'Subjects'], ['timetable', 'Timetable'], ['notes', 'Notes'], ['library', 'Shared']];
         let body = '';
         if (ui.studyTab === 'subjects') {
             body = `<div class="flat">${SUBJECTS.map(s => `
@@ -227,6 +230,9 @@
                     return `<div class="row"><span class="code-chip ${info.kind}" style="min-width:76px">${fmtTime(e.t)}</span><span class="grow"><b>${live ? `<span class="hl">${esc(info.title)}</span><span class="tag">Now</span>` : esc(info.title)}</b><span>${esc(info.sub)}</span></span></div>`;
                 }).join('')}</div>
                 <p class="fine">Section A. Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: A1 is roll numbers 01 to 29, A2 is 30 to 58.</p>`;
+        } else if (ui.studyTab === 'library') {
+            body = libraryHtml();
+            if (libOn() && !ui.lib.loaded && !ui.lib.loading) loadLibrary();
         } else {
             const f = ui.noteFilter;
             const notes = S.notes.filter(n => f === 'all' || n.subject === f);
@@ -244,6 +250,115 @@
         $('#page-study').innerHTML = `<h1 class="ptitle">Study</h1>
             <div class="seg" role="tablist">${tabs.map(([id, label]) => `<button role="tab" class="${ui.studyTab === id ? 'on' : ''}" data-act="study-tab" data-tab="${id}">${label}</button>`).join('')}</div>${body}`;
     };
+
+
+    // ============================================================
+    //  SHARED LIBRARY — Google Drive links shared with the class.
+    //  Stored in a free Supabase database (see supabase/setup.sql).
+    //  Each upload gets a 6-digit PIN; only the PIN can delete it.
+    //  The PIN is hashed on the server and never stored in plain text.
+    // ============================================================
+    const CFG = window.ELEVEN_CONFIG || {};
+    const libOn = () => !!(CFG.supabaseUrl && CFG.supabaseKey);
+    const classKey = () => 'CSE-3-A';   // becomes the picked class once the class picker is added
+    const DRIVE_RE = /^https:\/\/(drive|docs)\.google\.com\//i;
+
+    async function rpc(name, args) {
+        const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+        try {
+            const headers = { 'Content-Type': 'application/json', apikey: CFG.supabaseKey };
+            if (/^eyJ/.test(CFG.supabaseKey)) headers.Authorization = 'Bearer ' + CFG.supabaseKey;
+            const r = await fetch(CFG.supabaseUrl.replace(/\/$/, '') + '/rest/v1/rpc/' + name, { method: 'POST', headers, body: JSON.stringify(args), signal: ctl.signal });
+            if (!r.ok) throw new Error('http ' + r.status);
+            const t = await r.text();
+            return t ? JSON.parse(t) : null;
+        } finally { clearTimeout(to); }
+    }
+
+    async function loadLibrary() {
+        if (!libOn() || ui.lib.loading) return;
+        ui.lib.loading = true; ui.lib.error = false;
+        if (current === 'study' && ui.studyTab === 'library') R.study();
+        try { ui.lib.items = (await rpc('list_resources', { p_class: classKey() })) || []; ui.lib.loaded = true; }
+        catch (e) { ui.lib.error = true; ui.lib.loaded = true; }
+        ui.lib.loading = false;
+        if (current === 'study' && ui.studyTab === 'library') R.study();
+    }
+
+    function libraryHtml() {
+        if (!libOn()) return `<div class="sheet-paper empty"><b>Shared library is not switched on yet</b>Once it is, you can share Google Drive links with your class here. For now, use the Notes tab for your own links.</div>`;
+        const L = ui.lib, f = ui.libFilter;
+        const mine = get('mineLib', []);
+        const subs = ['all'].concat(Array.from(new Set(L.items.map(i => i.subject))));
+        const items = L.items.filter(i => f === 'all' || i.subject === f);
+        let list;
+        if (L.loading && !L.items.length) list = `<div class="sheet-paper empty"><b>Loading shared links…</b></div>`;
+        else if (L.error) list = `<div class="sheet-paper empty"><b>Could not load the library</b>Check your internet and tap Refresh.</div>`;
+        else if (!items.length) list = `<div class="sheet-paper empty"><b>Nothing shared here yet</b>Be the first. Tap “Share a link” to add a Google Drive link for your class.</div>`;
+        else list = `<div class="flat">${items.map(n => `
+            <div class="note">
+                <div class="note-top"><span class="code-chip">${esc(n.subject)}</span><span class="date-sm">${esc(new Date(n.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span></div>
+                <h3>${esc(n.title)}</h3><p>Shared by ${esc(n.uploader)}${mine.includes(n.id) ? ' <span class="tag">You</span>' : ''}</p>
+                <div class="note-actions"><a class="link-btn" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Open link</a><button class="del" data-act="lib-del" data-id="${esc(n.id)}">Delete</button><button class="del" data-act="lib-report" data-id="${esc(n.id)}">Report</button></div>
+            </div>`).join('')}</div>`;
+        return `<p class="fine" style="margin:0 0 12px">Drive links shared by your classmates. Anyone can add one. Only the person who shared it can delete it, using their 6-digit PIN.</p>
+            <div class="lib-actions"><button class="btn primary small" data-act="lib-add">Share a link</button><button class="btn ghost small" data-act="lib-refresh">${L.loading ? 'Loading…' : 'Refresh'}</button></div>
+            ${subs.length > 2 ? `<div class="chips">${subs.map(o => `<button class="chip ${f === o ? 'on' : ''}" data-act="lib-filter" data-f="${esc(o)}">${o === 'all' ? 'All' : esc(o)}</button>`).join('')}</div>` : ''}
+            ${list}
+            <p class="fine">Make sure the Drive link is set to “Anyone with the link can view”. Only Google Drive and Docs links are accepted. Report anything that does not belong here.</p>`;
+    }
+
+    function randomPin() {
+        const a = new Uint32Array(1); crypto.getRandomValues(a);
+        return String(a[0] % 1000000).padStart(6, '0');
+    }
+
+    function libAddSheet() {
+        openSheet('Share a Drive link', `<form data-form="share">
+            <label>Title<input name="title" maxlength="80" required placeholder="e.g. DSA unit 3 notes" /></label>
+            <label>Subject<select name="subject">${subjectOptions('General')}</select></label>
+            <label>Google Drive link<input type="url" name="url" required placeholder="https://drive.google.com/..." /></label>
+            <label>Your name <span class="opt">(shown to others)</span><input name="uploader" maxlength="30" value="${esc(S.profile.name)}" /></label>
+            <label>Delete PIN <span class="opt">(6 digits, you will need it to delete)</span>
+                <span class="pin-row"><input name="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" minlength="6" required placeholder="------" autocomplete="off" /><button type="button" class="btn ghost small" data-act="pin-gen">Make one for me</button></span></label>
+            <button class="btn primary block" type="submit">Share</button></form>`);
+    }
+
+    function receiptSheet(d) {
+        const text = `ElevenNotes shared link\nTitle: ${d.title}\nSubject: ${d.subject}\nLink: ${d.url}\nShared by: ${d.uploader}\nDate: ${d.date}\nDelete PIN: ${d.pin}\n\nKeep this PIN safe. It is the only way to delete this link, and it cannot be recovered.`;
+        let copied = false;
+        openSheet('Shared. Save your PIN', `<div class="ticket">
+                <div class="ticket-row"><span>Title</span><b>${esc(d.title)}</b></div>
+                <div class="ticket-row"><span>Subject</span><b>${esc(d.subject)}</b></div>
+                <div class="ticket-row"><span>Link</span><b class="brk">${esc(d.url)}</b></div>
+                <div class="ticket-row"><span>Shared by</span><b>${esc(d.uploader)}</b></div>
+                <div class="ticket-row"><span>Date</span><b>${esc(d.date)}</b></div>
+                <div class="ticket-pin"><span>Delete PIN</span><b>${esc(d.pin)}</b></div>
+            </div>
+            <p class="fine" style="margin-top:12px">Copy these details or take a screenshot. This PIN is shown only once and cannot be recovered. Without it, nobody (including you) can delete this link.</p>
+            <button class="btn primary block" id="copyAll">Copy all details</button>
+            <button class="btn ghost block" data-act="close-sheet">I have saved it</button>`);
+        $('#copyAll').addEventListener('click', async () => {
+            let ok = false;
+            try { await navigator.clipboard.writeText(text); ok = true; }
+            catch (e) {
+                const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+                try { ok = document.execCommand('copy'); } catch (e2) { ok = false; } ta.remove();
+            }
+            if (ok) { copied = true; $('#copyAll').textContent = 'Copied'; toast('Details copied'); } else toast('Could not copy. Please take a screenshot instead.');
+        });
+        sheetGuard = () => copied || confirm('Have you saved your PIN (' + d.pin + ')? It cannot be recovered. Close anyway?');
+        // the "I have saved it" button counts as confirmation
+        $('#sheetBody [data-act="close-sheet"]').addEventListener('click', () => { copied = true; }, true);
+    }
+
+    function libDelSheet(id) {
+        const it = ui.lib.items.find(i => i.id === id); if (!it) return;
+        openSheet('Delete this link', `<form data-form="unshare"><input type="hidden" name="id" value="${esc(id)}" />
+            <p><b>${esc(it.title)}</b></p>
+            <label>Enter the 6-digit PIN you got when you shared it<input name="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" minlength="6" required placeholder="------" autocomplete="off" /></label>
+            <button class="btn danger block" type="submit">Delete</button></form>`);
+    }
 
     // ---------- PLAN ----------
     R.plan = function () {
@@ -560,6 +675,31 @@
     }
 
     const FORMS = {
+        async share(f) {
+            const title = f.title.value.trim(), url = f.url.value.trim(), pin = f.pin.value.trim();
+            if (title.length < 2) { toast('Please add a title'); return; }
+            if (!DRIVE_RE.test(url)) { toast('Please paste a Google Drive or Docs link (https://drive.google.com/...)'); return; }
+            if (!/^[0-9]{6}$/.test(pin)) { toast('The PIN must be exactly 6 digits'); return; }
+            const btn = f.querySelector('[type=submit]'); btn.disabled = true; btn.textContent = 'Sharing…';
+            const d = { title, url, pin, subject: f.subject.value, uploader: f.uploader.value.trim() || 'Student', date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) };
+            try {
+                const id = await rpc('add_resource', { p_class: classKey(), p_title: d.title, p_subject: d.subject, p_url: d.url, p_uploader: d.uploader, p_pin: pin });
+                const mine = get('mineLib', []); mine.push(id); set('mineLib', mine.slice(-100));
+                ui.lib.loaded = false; ui.lib.items = [];
+                closeSheet(); receiptSheet(d); loadLibrary();
+            } catch (e) { btn.disabled = false; btn.textContent = 'Share'; toast('Could not share. Check your internet and try again.'); }
+        },
+        async unshare(f) {
+            const id = f.id.value, pin = f.pin.value.trim();
+            if (!/^[0-9]{6}$/.test(pin)) { toast('The PIN must be exactly 6 digits'); return; }
+            const btn = f.querySelector('[type=submit]'); btn.disabled = true;
+            try {
+                const r = await rpc('delete_resource', { p_id: id, p_pin: pin });
+                if (r === 'ok' || r === 'missing') { ui.lib.items = ui.lib.items.filter(i => i.id !== id); closeSheet(); renderCurrent(); toast(r === 'ok' ? 'Deleted' : 'That link is already gone'); }
+                else if (r === 'locked') { btn.disabled = false; toast('Too many wrong PINs. Try again in 15 minutes.'); }
+                else { btn.disabled = false; f.pin.value = ''; toast('Wrong PIN. Please try again.'); }
+            } catch (e) { btn.disabled = false; toast('Could not delete. Check your internet and try again.'); }
+        },
         task(f) {
             const title = f.title.value.trim(); if (!title) return;
             S.tasks.unshift({ id: uid(), title, subject: f.subject.value, priority: f.priority.value, date: f.date.value || '', done: false, counted: false });
@@ -611,6 +751,18 @@
         subject(t) { subjectSheet(t.dataset.id); },
         'note-for'(t) { noteSheet(t.dataset.id); },
         'task-for'(t) { taskSheet(t.dataset.id); },
+        'lib-add'() { libAddSheet(); },
+        'lib-refresh'() { ui.lib.loaded = false; loadLibrary(); },
+        'lib-filter'(t) { ui.libFilter = t.dataset.f; renderCurrent(); },
+        'lib-del'(t) { libDelSheet(t.dataset.id); },
+        'lib-report'(t) {
+            const rep = get('reportedLib', []);
+            if (rep.includes(t.dataset.id)) { toast('You already reported this'); return; }
+            if (!confirm('Report this link as spam or not suitable?')) return;
+            rep.push(t.dataset.id); set('reportedLib', rep.slice(-200));
+            rpc('report_resource', { p_id: t.dataset.id }).then(() => toast('Thanks. Reported.')).catch(() => toast('Could not report. Try again later.'));
+        },
+        'pin-gen'(t) { const i = t.closest('form').pin; i.value = randomPin(); i.focus(); },
         'add-note'() { noteSheet(); },
         'add-task'() { taskSheet(); },
         'note-filter'(t) { ui.noteFilter = t.dataset.f; renderCurrent(); },

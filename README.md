@@ -7,6 +7,7 @@ A free, phone-first student planner built with plain HTML, CSS and JavaScript. N
 ## What is inside
 - **Home**: a "Today" sheet with your classes, your next class highlighted, tasks, exam countdown and quick links
 - **Study**: subjects, a day-by-day timetable, and notes (save Google Drive links per subject)
+- **Shared library** (Study > Shared): share Google Drive links with your class. Each upload gets a 6-digit PIN, and only that PIN can delete it. Needs the free Supabase setup below.
 - **Plan**: tasks with subject, priority and due date
 - **Tools**: SGPA calculator (VTU grade scale), attendance planner, exam countdown with your own dates, focus timer
 - **Me**: your name, USN, bio and picture, plus XP levels, daily challenges and 13 badges
@@ -17,6 +18,14 @@ A free, phone-first student planner built with plain HTML, CSS and JavaScript. N
 - ElevenNotes is **not connected to any college system or third-party portal** and does not read attendance or marks.
 - Subjects, faculty, timetable and dates are sample content for CSE Semester 3, Section A.
 
+## Switching on the Shared library
+1. Create a free project at supabase.com.
+2. Open **SQL Editor**, paste all of `supabase/setup.sql`, and run it.
+3. Open **Project Settings > API**, copy the Project URL and the anon / publishable key into `js/config.js`.
+4. Commit and push. Done.
+
+How it stays safe: the table is locked, the website can only call four functions, the PIN is stored only as a bcrypt hash, 5 wrong PINs lock that link for 15 minutes, only Google Drive/Docs links are accepted, and links with 5 reports are hidden. You can remove anything yourself in the Supabase Table Editor.
+
 ## Run locally
 Open `index.html` in a browser, or use the VS Code Live Server extension.
 
@@ -24,6 +33,8 @@ Open `index.html` in a browser, or use the VS Code Live Server extension.
 ```
 index.html          page shell
 css/style.css       design system, light and dark themes
+js/config.js        Supabase URL and key for the Shared library
+supabase/setup.sql  database tables and functions
 js/data.js          sample subjects, timetable, badges, challenges
 js/app.js           pages, tools, planner, timer, progress system
 images/ audio/      logo, avatars, focus music

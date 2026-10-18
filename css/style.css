@@ -457,6 +457,20 @@ body[data-view="plan"] .fab { display: flex; }
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------- shared library ---------- */
+.lib-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.pin-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.pin-row input { flex: 1; min-width: 0; letter-spacing: .35em; font-weight: 700; font-size: 18px; text-align: center; }
+.pin-row .btn { margin-top: 0; white-space: nowrap; }
+.ticket { background: var(--paper); border: 2px dashed var(--line, var(--brand)); border-radius: 18px; padding: 14px 16px; }
+.ticket-row { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; font-size: 14px; }
+.ticket-row span { color: var(--ink-2); flex: none; }
+.ticket-row b { text-align: right; min-width: 0; }
+.ticket-row b.brk { word-break: break-all; font-size: 12.5px; font-weight: 600; }
+.ticket-pin { margin-top: 8px; padding: 12px; text-align: center; background: var(--hi, #fff3a8); border-radius: 14px; color: #1b1a3a; }
+.ticket-pin span { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.ticket-pin b { font-family: 'Bricolage Grotesque', sans-serif; font-size: 34px; letter-spacing: .28em; padding-left: .28em; }
+
 /* ---------- wide screens: dock becomes a side rail ---------- */
 @media (min-width: 900px) {
     .dock {

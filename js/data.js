@@ -257,6 +257,36 @@ const CLASS_DATA = {
         },
         exams: []
     }
+    ,
+    'ISE|3': {
+        note: 'Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab periods are for the whole class (roll numbers 1 to 40).',
+        subjects: [
+            { id: 'MATHS', code: '18CS302',   name: 'Probability Distributions and Statistics', faculty: 'Dr. B H Sherla',        kind: 'theory', credits: 3 },
+            { id: 'JAVA',  code: '18CS303',   name: 'Data Structures with Java',                faculty: 'Dr. B H Sherla',        kind: 'theory', credits: 3 },
+            { id: 'DDCO',  code: '18CS301',   name: 'DDCO',                                     faculty: 'Sumalatha B',           kind: 'theory', credits: 3 },
+            { id: 'OS',    code: '18CS304',   name: 'Operating System',                         faculty: 'Dr. Sreerajith B',      kind: 'theory', credits: 3 },
+            { id: 'DS',    code: '18CS305',   name: 'Data Structures',                          faculty: 'Dr. M Mahantesh H M',   kind: 'theory', credits: 3 },
+            { id: 'DSL',   code: '18CSL306',  name: 'Data Structures Lab',                      faculty: 'Dr. M Mahantesh H M',   kind: 'lab',    credits: 1 },
+            { id: 'GIT',   code: '18CSL307A', name: 'Git Hub Lab',                              faculty: 'K S Viniyas Kumar',     kind: 'lab',    credits: 1 },
+            { id: 'CP',    code: '18CP308',   name: 'Project',                                  faculty: 'All staff',             kind: 'project', credits: 1 }
+        ],
+        faculty: [
+            { name: 'Dr. B H Sherla',      subject: 'Probability Distributions and Statistics, Data Structures with Java', emoji: '👨‍🏫' },
+            { name: 'Sumalatha B',         subject: 'DDCO',                         emoji: '👩‍🏫' },
+            { name: 'Dr. Sreerajith B',    subject: 'Operating System',             emoji: '👨‍🏫' },
+            { name: 'Dr. M Mahantesh H M', subject: 'Data Structures, Data Structures Lab', emoji: '👨‍🏫' },
+            { name: 'K S Viniyas Kumar',   subject: 'Git Hub Lab',                  emoji: '👨‍🏫' }
+        ],
+        timetable: {
+            1: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'DDCO' }, { t: 660, n: 1, sub: 'JAVA' }, { t: 715, n: 1, sub: 'DS' }, { t: 855, n: 3, title: 'Java Lab', detail: 'Whole class', kind: 'lab' }],
+            2: [{ t: 540, n: 1, sub: 'DS' }, { t: 595, n: 1, sub: 'DDCO' }, { t: 660, n: 1, sub: 'DS' }, { t: 715, n: 1, sub: 'JAVA' }, { t: 855, n: 3, sub: 'GIT' }],
+            3: [{ t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DS' }, { t: 715, n: 1, sub: 'MATHS' }, { t: 855, n: 3, title: 'Data Structures / Git Hub Lab (TD)', detail: 'As printed on the college timetable', kind: 'lab' }],
+            4: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'MATHS' }, { t: 855, n: 3, sub: 'DSL' }],
+            5: [{ t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'DDCO' }, { t: 855, n: 3, sub: 'CP' }],
+            6: [{ t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'MATHS' }]
+        },
+        exams: []
+    }
 };
 
 // Active class data. app.js fills these in from the class the student picked.

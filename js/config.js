@@ -7,5 +7,5 @@
 // ============================================================
 window.ELEVEN_CONFIG = {
     supabaseUrl: 'https://dqeceaxnhzajxxwuqfwm.supabase.co',
-    supabaseKey: 'sb_publishable_mtq4CoTXBzl-LfTHbfT9lA_1AcP5yxT'
+    supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZWNlYXhuaHphanh4d3VxZndtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNzU4NjcsImV4cCI6MjEwNzk1MTg2N30.KU0pQMwMV1nvfKqI1cBmj4hHipxy0EoYWqEXUCdAEPM'
 };

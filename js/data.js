@@ -181,7 +181,7 @@ const CLASS_DATA = {
         ],
         timetable: {
             1: [{ t: 540, n: 1, sub: 'DSA' }, { t: 595, n: 1, sub: 'MATHS' }, { t: 660, n: 1, sub: 'JAVA' }, { t: 715, n: 1, sub: 'DDCO' }, { t: 855, n: 3, sub: 'DSL' }],
-            2: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 2, sub: 'DSL' }, { t: 855, n: 3, sub: 'CP' }],
+            2: [{ t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'DDCO' }, { t: 660, n: 2, sub: 'DSL' }, { t: 855, n: 3, title: 'DS lab / Mini project', detail: 'Data Structures lab or mini project', kind: 'lab' }],
             3: [{ t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'DDCO' }, { t: 660, n: 2, title: 'Lab session', detail: 'Batch B1: Java Lab. Batch B2: EDA Lab.', kind: 'lab' }, { t: 855, n: 1, sub: 'MATHS' }, { t: 910, n: 1, sub: 'JAVA' }, { t: 965, n: 1, sub: 'JAVA' }],
             4: [{ t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'MATHS' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch B2: Java Lab. Batch B1: EDA Lab.', kind: 'lab' }],
             5: [{ t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'DSA' }, { t: 855, n: 1, sub: 'OS' }, { t: 910, n: 1, sub: 'DDCO' }, { t: 965, n: 1, title: 'Library', detail: 'Read, borrow, revise', kind: 'free' }],
@@ -219,7 +219,7 @@ const CLASS_DATA = {
             3: [{ t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'DSA' }, { t: 855, n: 3, sub: 'DSL' }],
             4: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 1, sub: 'DSA' }, { t: 715, n: 1, sub: 'JAVA' }, { t: 855, n: 1, sub: 'MATHS' }, { t: 910, n: 1, sub: 'JAVA' }, { t: 965, n: 1, sub: 'DDCO' }],
             5: [{ t: 540, n: 2, title: 'Lab session', detail: 'Batch B2: Java Lab. Batch B1: EDA Lab.', kind: 'lab' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'MATHS' }, { t: 855, n: 3, sub: 'CP' }],
-            6: [{ t: 540, n: 1, sub: 'DSA' }, { t: 595, n: 1, title: 'Lab session', detail: 'Batch B1: Java Lab. Batch B2: EDA Lab.', kind: 'lab' }, { t: 660, n: 2, title: 'Lab session', detail: 'Batch B1: Java Lab. Batch B2: EDA Lab.', kind: 'lab' }]
+            6: [{ t: 540, n: 1, sub: 'DSA' }, { t: 660, n: 2, title: 'Lab session', detail: 'Batch B1: Java Lab. Batch B2: EDA Lab.', kind: 'lab' }]
         },
         exams: []
     }
@@ -248,7 +248,7 @@ const CLASS_DATA = {
         ],
         timetable: {
             1: [{ t: 540, n: 1, sub: 'SM' }, { t: 595, n: 1, sub: 'BM&C' }, { t: 660, n: 1, sub: 'MAT' }, { t: 715, n: 1, sub: 'FM&HM' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A1: FM&HM Lab. Batch A2: NSS.', kind: 'lab' }],
-            2: [{ t: 540, n: 1, sub: 'EGIP' }, { t: 595, n: 1, sub: 'FM&HM' }, { t: 660, n: 1, sub: 'MAT' }, { t: 715, n: 1, sub: 'SM' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A2: FM&HM Lab. Batch A1: NSS.', kind: 'lab' }],
+            2: [{ t: 540, n: 1, sub: 'EGIP' }, { t: 595, n: 1, sub: 'FM&HM' }, { t: 660, n: 1, title: 'MAAT', detail: 'As printed on the college timetable', kind: 'theory' }, { t: 715, n: 1, sub: 'SM' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A2: FM&HM Lab. Batch A1: NSS.', kind: 'lab' }],
             3: [{ t: 540, n: 1, sub: 'MAT' }, { t: 595, n: 1, sub: 'BM&C' }, { t: 660, n: 1, sub: 'EGIP' }, { t: 715, n: 1, sub: 'FM&HM' }, { t: 855, n: 1, title: 'TW/SL', detail: 'As printed on the college timetable', kind: 'free' },
                 { t: 910, n: 2, title: 'Mathematics course', detail: 'For lateral entry students. Ms. Kaveri P.', kind: 'theory' }],
             4: [{ t: 540, n: 1, sub: 'BM&C' }, { t: 595, n: 1, sub: 'FM&HM' }, { t: 660, n: 1, sub: 'EGIP' }, { t: 715, n: 1, sub: 'SM' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A1: CAD Lab. Batch A2: EGSI Lab.', kind: 'lab' }],

@@ -233,8 +233,19 @@ label input, label select, label textarea { margin-top: 6px; font-weight: 400; }
 .cls-title { font-weight: 700; font-size: 16.5px; line-height: 1.3; }
 .cls-sub { font-size: 13.5px; color: var(--ink-2); margin-top: 2px; }
 .cls.now .cls-time, .cls.next .cls-time { color: var(--brand-ink); }
-.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; margin-left: 8px; vertical-align: 2px; background: var(--brand); color: #fff; }
-[data-theme="dark"] .tag { color: #12112a; }
+/* "Now" and "Up next" markers: small soft pills that sit above the title */
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; line-height: 1; padding: 5px 10px 5px 9px; border-radius: 999px; margin: 0 0 6px; background: var(--brand-soft); color: var(--brand-ink); }
+.flat .grow .tag { font-size: 11.5px; color: var(--brand-ink); }
+.tag.live { background: var(--mint-soft); color: var(--mint); }
+.flat .grow .tag.live { color: var(--mint); }
+.tag.live i { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0 var(--mint); animation: livepulse 1.8s ease-out infinite; }
+@keyframes livepulse { 0% { box-shadow: 0 0 0 0 rgba(43, 182, 115, .55); } 70%, 100% { box-shadow: 0 0 0 7px rgba(43, 182, 115, 0); } }
+.tag.soon { background: transparent; border: 1.5px solid var(--brand-soft); color: var(--brand-ink); padding: 3.5px 9px; }
+/* the class happening right now: a soft tinted card with an accent edge */
+.cls.now { background: linear-gradient(90deg, var(--brand-soft), transparent 92%); border-radius: 16px; border-bottom-color: transparent; padding-left: 12px; padding-right: 10px; margin: 2px -12px; box-shadow: inset 4px 0 0 var(--brand); }
+.flat > .row.live { background: linear-gradient(90deg, var(--brand-soft), transparent 92%); box-shadow: inset 4px 0 0 var(--brand); }
+.flat > .row.live .code-chip { background: var(--brand); color: #fff; }
+[data-theme="dark"] .flat > .row.live .code-chip { color: #12112a; }
 .cls.past { opacity: .5; }
 .empty { text-align: center; padding: 22px 8px 26px; color: var(--ink-2); }
 .empty b { display: block; font-family: var(--font-head); font-size: 20px; color: var(--ink); margin-bottom: 4px; }

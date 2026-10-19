@@ -182,9 +182,8 @@
             const info = entryInfo(e), end = e.t + e.n * PERIOD_MIN;
             const cur = nowMin >= e.t && nowMin < end, past = nowMin >= end, nxt = i === nextIdx;
             const cls = cur ? 'now' : nxt ? 'next' : past ? 'past' : '';
-            const tag = cur ? '<span class="tag">Now</span>' : nxt ? '<span class="tag">Up next</span>' : '';
-            const title = (cur || nxt) ? `<span class="hl">${esc(info.title)}</span>` : esc(info.title);
-            return `<li class="cls ${cls}"><div class="cls-time">${fmtTime(e.t)}</div><div><div class="cls-title">${title}${tag}</div><div class="cls-sub">${esc(info.sub)}</div></div></li>`;
+            const tag = cur ? '<span class="tag live"><i></i>Now</span>' : nxt ? '<span class="tag soon">Up next</span>' : '';
+            return `<li class="cls ${cls}"><div class="cls-time">${fmtTime(e.t)}</div><div>${tag}<div class="cls-title">${esc(info.title)}</div><div class="cls-sub">${esc(info.sub)}</div></div></li>`;
         }).join('');
         const sheet = list.length
             ? `<ul class="classes">${classes}</ul>`
@@ -242,7 +241,7 @@
                 <div class="flat">${list.map(e => {
                     const info = entryInfo(e), end = e.t + e.n * PERIOD_MIN;
                     const live = ui.day === dow && nowMin >= e.t && nowMin < end;
-                    return `<div class="row"><span class="code-chip ${info.kind}" style="min-width:76px">${fmtTime(e.t)}</span><span class="grow"><b>${live ? `<span class="hl">${esc(info.title)}</span><span class="tag">Now</span>` : esc(info.title)}</b><span>${esc(info.sub)}</span></span></div>`;
+                    return `<div class="row ${live ? 'live' : ''}"><span class="code-chip ${info.kind}" style="min-width:76px">${fmtTime(e.t)}</span><span class="grow">${live ? '<span class="tag live"><i></i>Now</span>' : ''}<b>${esc(info.title)}</b><span>${esc(info.sub)}</span></span></div>`;
                 }).join('')}</div>
                 <p class="fine">${esc(CD.note)} Always check your official college timetable too.</p>`;
         } else if (ui.studyTab === 'library') {

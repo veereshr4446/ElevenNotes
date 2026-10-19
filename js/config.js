@@ -6,6 +6,6 @@
 //  Leave both empty and the Shared tab simply shows "not switched on".
 // ============================================================
 window.ELEVEN_CONFIG = {
-    supabaseUrl: '',   // e.g. https://abcdxyz.supabase.co
-    supabaseKey: ''    // the anon / publishable key
+    supabaseUrl: 'https://dqeceaxnhzajxxwuqfwm.supabase.co',
+    supabaseKey: 'sb_publishable_mtq4CoTXBzl-LfTHbfT9lA_1AcP5yxT'
 };

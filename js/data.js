@@ -10,7 +10,8 @@
 const BRANCHES = [
     { id: 'CSE-A', name: 'CSE – A',        long: 'Computer Science & Engineering, Section A', emoji: '💻' },
     { id: 'CSE-B', name: 'CSE – B',        long: 'Computer Science & Engineering, Section B', emoji: '💻' },
-    { id: 'AIML',  name: 'CSE – AI & ML',  long: 'CSE (Artificial Intelligence & Machine Learning)', emoji: '🤖' },
+    { id: 'AIML-A', name: 'CSE – AI & ML – A', long: 'CSE (Artificial Intelligence & Machine Learning), Section A', emoji: '🤖' },
+    { id: 'AIML-B', name: 'CSE – AI & ML – B', long: 'CSE (Artificial Intelligence & Machine Learning), Section B', emoji: '🤖' },
     { id: 'DS',    name: 'CSE – Data Science & Cyber', long: 'CSE (Data Science) and CSE (Cyber Security)', emoji: '📊' },
     { id: 'ISE',   name: 'ISE',            long: 'Information Science & Engineering', emoji: '🧩' },
     { id: 'ECE',   name: 'ECE',            long: 'Electronics & Communication Engineering', emoji: '📡' },
@@ -151,6 +152,108 @@ const CLASS_DATA = {
             5: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, title: 'NSS / Yoga', detail: 'National Service Scheme or Yoga', kind: 'free' },
                 { t: 855, n: 3, title: 'Git lab', detail: 'Project Management (with Git). Batch 1 and Batch 2.', kind: 'lab' }],
             6: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'MATHS' }, { t: 715, n: 1, sub: 'CP' }]
+        },
+        exams: []
+    }
+    ,
+    'AIML-A|3': {
+        note: 'Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: B1 is roll numbers 01 to 32, B2 is 33 to 64.',
+        subjects: [
+            { id: 'MATHS', code: '1BMATCS301', name: 'Probability, Distributions and Statistics', faculty: 'Mr. Matti Prabhakar / Mrs. Gangamma', kind: 'theory', credits: 3 },
+            { id: 'JAVA',  code: '1BCS302',    name: 'Object Oriented Programming with Java',    faculty: 'Dr. Shilpa Patil',  kind: 'theory', credits: 3 },
+            { id: 'DDCO',  code: '1BCS303',    name: 'Digital Design and Computer Organization', faculty: 'Miss Keerthi',      kind: 'theory', credits: 3 },
+            { id: 'OS',    code: '1BCS304',    name: 'Operating Systems',                        faculty: 'Dr. T. Hanumantha Reddy',           kind: 'theory', credits: 3 },
+            { id: 'DSA',   code: '1BCS305',    name: 'Data Structures and Applications',         faculty: 'ENV Rajesh',        kind: 'theory', credits: 3 },
+            { id: 'DSL',   code: '1BCSL306',   name: 'Data Structures Laboratory',               faculty: 'ENV Rajesh / Nazneen Jaha',          kind: 'lab',    credits: 1 },
+            { id: 'EDA',   code: '1BAIL307A',  name: 'Exploratory Data Analysis',                faculty: 'Mr. R. Manjunath',  kind: 'lab',    credits: 1 },
+            { id: 'CP',    code: '1BCP308',    name: 'Community Project',                        faculty: 'Dr. Prashant K',    kind: 'project', credits: 1 }
+        ],
+        faculty: [
+            { name: 'Mr. Matti Prabhakar', subject: 'Probability, Distributions and Statistics', emoji: '👨‍🏫' },
+            { name: 'Mrs. Gangamma', subject: 'Probability, Distributions and Statistics', emoji: '👩‍🏫' },
+            { name: 'Dr. Shilpa Patil', subject: 'Object Oriented Programming with Java', emoji: '👩‍🏫' },
+            { name: 'Miss Keerthi', subject: 'Digital Design and Computer Organization', emoji: '👩‍🏫' },
+            { name: 'Dr. T. Hanumantha Reddy', subject: 'Operating Systems', emoji: '👨‍🏫' },
+            { name: 'ENV Rajesh', subject: 'Data Structures and Applications, Data Structures Laboratory', emoji: '👨‍🏫' },
+            { name: 'Nazneen Jaha', subject: 'Data Structures Laboratory', emoji: '👩‍🏫' },
+            { name: 'Mr. R. Manjunath', subject: 'Exploratory Data Analysis', emoji: '👨‍🏫' },
+            { name: 'Dr. Prashant K', subject: 'Community Project', emoji: '👨‍🏫' }
+        ],
+        timetable: {
+            1: [{ t: 540, n: 1, sub: 'DSA' }, { t: 595, n: 1, sub: 'MATHS' }, { t: 660, n: 1, sub: 'JAVA' }, { t: 715, n: 1, sub: 'DDCO' }, { t: 855, n: 3, sub: 'DSL' }],
+            2: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 2, sub: 'DSL' }, { t: 855, n: 3, sub: 'CP' }],
+            3: [{ t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'DDCO' }, { t: 660, n: 2, title: 'Lab session', detail: 'Batch B1: Java Lab. Batch B2: EDA Lab.', kind: 'lab' }, { t: 855, n: 1, sub: 'MATHS' }, { t: 910, n: 1, sub: 'JAVA' }, { t: 965, n: 1, sub: 'JAVA' }],
+            4: [{ t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'MATHS' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch B2: Java Lab. Batch B1: EDA Lab.', kind: 'lab' }],
+            5: [{ t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'DSA' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'DSA' }, { t: 855, n: 1, sub: 'OS' }, { t: 910, n: 1, sub: 'DDCO' }, { t: 965, n: 1, title: 'Library', detail: 'Read, borrow, revise', kind: 'free' }],
+            6: [{ t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 1, sub: 'DSA' }, { t: 715, n: 1, sub: 'MATHS' }]
+        },
+        exams: []
+    }
+    ,
+    'AIML-B|3': {
+        note: 'Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: B1 is roll numbers 01 to 32, B2 is 33 to 64.',
+        subjects: [
+            { id: 'MATHS', code: '1BMATCS301', name: 'Probability, Distributions and Statistics', faculty: 'Dr. Meti Prabhakar', kind: 'theory', credits: 3 },
+            { id: 'JAVA',  code: '1BCS302',    name: 'Object Oriented Programming with Java',    faculty: 'Dr. Shilpa Patil',  kind: 'theory', credits: 3 },
+            { id: 'DDCO',  code: '1BCS303',    name: 'Digital Design and Computer Organization', faculty: 'Miss Keerthi',      kind: 'theory', credits: 3 },
+            { id: 'OS',    code: '1BCS304',    name: 'Operating Systems',                        faculty: 'Mr. R. Manjunath',           kind: 'theory', credits: 3 },
+            { id: 'DSA',   code: '1BCS305',    name: 'Data Structures and Applications',         faculty: 'ENV Rajesh',        kind: 'theory', credits: 3 },
+            { id: 'DSL',   code: '1BCSL306',   name: 'Data Structures Laboratory',               faculty: 'Dr. Sai Madhavi D / Nazneen Jaha',          kind: 'lab',    credits: 1 },
+            { id: 'EDA',   code: '1BAIL307A',  name: 'Exploratory Data Analysis',                faculty: 'Mr. R. Manjunath',  kind: 'lab',    credits: 1 },
+            { id: 'CP',    code: '1BCP308',    name: 'Community Project',                        faculty: 'Dr. Prashant K',    kind: 'project', credits: 1 }
+        ],
+        faculty: [
+            { name: 'Dr. Meti Prabhakar', subject: 'Probability, Distributions and Statistics', emoji: '👨‍🏫' },
+            { name: 'Dr. Shilpa Patil', subject: 'Object Oriented Programming with Java', emoji: '👩‍🏫' },
+            { name: 'Miss Keerthi', subject: 'Digital Design and Computer Organization', emoji: '👩‍🏫' },
+            { name: 'Mr. R. Manjunath', subject: 'Operating Systems', emoji: '👨‍🏫' },
+            { name: 'ENV Rajesh', subject: 'Data Structures and Applications', emoji: '👨‍🏫' },
+            { name: 'Dr. Sai Madhavi D', subject: 'Data Structures Laboratory', emoji: '👩‍🏫' },
+            { name: 'Nazneen Jaha', subject: 'Data Structures Laboratory', emoji: '👩‍🏫' },
+            { name: 'Mr. R. Manjunath', subject: 'Operating Systems, Exploratory Data Analysis', emoji: '👨‍🏫' },
+            { name: 'Dr. Prashant K', subject: 'Community Project', emoji: '👨‍🏫' }
+        ],
+        timetable: {
+            1: [{ t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'DSL' }, { t: 660, n: 2, sub: 'DSL' }, { t: 855, n: 1, sub: 'OS' }, { t: 910, n: 1, sub: 'DDCO' }, { t: 965, n: 1, sub: 'MATHS' }],
+            2: [{ t: 540, n: 1, sub: 'DSA' }, { t: 595, n: 1, sub: 'MATHS' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'DSA' }, { t: 855, n: 1, sub: 'OS' }, { t: 910, n: 1, sub: 'JAVA' }, { t: 965, n: 1, sub: 'JAVA' }],
+            3: [{ t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'DSA' }, { t: 855, n: 3, sub: 'DSL' }],
+            4: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'OS' }, { t: 660, n: 1, sub: 'DSA' }, { t: 715, n: 1, sub: 'JAVA' }, { t: 855, n: 1, sub: 'MATHS' }, { t: 910, n: 1, sub: 'JAVA' }, { t: 965, n: 1, sub: 'DDCO' }],
+            5: [{ t: 540, n: 2, title: 'Lab session', detail: 'Batch B2: Java Lab. Batch B1: EDA Lab.', kind: 'lab' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'MATHS' }, { t: 855, n: 3, sub: 'CP' }],
+            6: [{ t: 540, n: 1, sub: 'DSA' }, { t: 595, n: 1, title: 'Lab session', detail: 'Batch B1: Java Lab. Batch B2: EDA Lab.', kind: 'lab' }, { t: 660, n: 2, title: 'Lab session', detail: 'Batch B1: Java Lab. Batch B2: EDA Lab.', kind: 'lab' }]
+        },
+        exams: []
+    }
+    ,
+    'CIVIL|3': {
+        note: 'Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: A1 is odd roll numbers (1, 3, 5 ... 45), A2 is even roll numbers (2, 4, 6 ... 44).',
+        subjects: [
+            { id: 'MAT',   code: '1BMAT301', name: 'Probability and Statistics for Civil Engineers', faculty: 'Dr. Sumangalama',   kind: 'theory', credits: 5 },
+            { id: 'FM&HM', code: '1BCV302',  name: 'Fluid Mechanics and Hydraulic Machinery',        faculty: 'Mr. Ganesh H',      kind: 'theory', credits: 5 },
+            { id: 'SM',    code: '1BCV303',  name: 'Solid Mechanics',                                faculty: 'Dr. Mahesh',        kind: 'theory', credits: 5 },
+            { id: 'BM&C',  code: '1BCV304',  name: 'Building Materials and Construction',            faculty: 'Ms. Raja Selvi',    kind: 'theory', credits: 3 },
+            { id: 'EGIP',  code: '1BCV305',  name: 'Engineering Geology for Infrastructure Projects', faculty: 'Mr. Pavan Kumar M', kind: 'theory', credits: 3 },
+            { id: 'CAD',   code: '1BCVL306', name: 'Building CAD and 3D Modelling Lab',              faculty: 'Mr. Veereshaiah H M', kind: 'lab',  credits: 2 },
+            { id: 'EGSI',  code: '1BCV307D', name: 'Engineering Geology and Soil Identification Lab', faculty: 'Mr. Pavan Kumar M', kind: 'lab',   credits: 2 },
+            { id: 'CP',    code: '1BCP308',  name: 'Community Project / Societal Project',           faculty: 'Ms. N Kavya',       kind: 'project', credits: 1 }
+        ],
+        faculty: [
+            { name: 'Dr. Sumangalama',     subject: 'Probability and Statistics for Civil Engineers', emoji: '👩‍🏫' },
+            { name: 'Mr. Ganesh H',        subject: 'Fluid Mechanics and Hydraulic Machinery',        emoji: '👨‍🏫' },
+            { name: 'Dr. Mahesh',          subject: 'Solid Mechanics',                                emoji: '👨‍🏫' },
+            { name: 'Ms. Raja Selvi',      subject: 'Building Materials and Construction',            emoji: '👩‍🏫' },
+            { name: 'Mr. Pavan Kumar M',   subject: 'Engineering Geology for Infrastructure Projects, Engineering Geology and Soil Identification Lab', emoji: '👨‍🏫' },
+            { name: 'Mr. Veereshaiah H M', subject: 'Building CAD and 3D Modelling Lab',              emoji: '👨‍🏫' },
+            { name: 'Ms. N Kavya',         subject: 'Community Project / Societal Project, NSS',      emoji: '👩‍🏫' },
+            { name: 'Ms. Kaveri P.',       subject: 'Mathematics course for Lateral Entry Students',  emoji: '👩‍🏫' }
+        ],
+        timetable: {
+            1: [{ t: 540, n: 1, sub: 'SM' }, { t: 595, n: 1, sub: 'BM&C' }, { t: 660, n: 1, sub: 'MAT' }, { t: 715, n: 1, sub: 'FM&HM' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A1: FM&HM Lab. Batch A2: NSS.', kind: 'lab' }],
+            2: [{ t: 540, n: 1, sub: 'EGIP' }, { t: 595, n: 1, sub: 'FM&HM' }, { t: 660, n: 1, sub: 'MAT' }, { t: 715, n: 1, sub: 'SM' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A2: FM&HM Lab. Batch A1: NSS.', kind: 'lab' }],
+            3: [{ t: 540, n: 1, sub: 'MAT' }, { t: 595, n: 1, sub: 'BM&C' }, { t: 660, n: 1, sub: 'EGIP' }, { t: 715, n: 1, sub: 'FM&HM' }, { t: 855, n: 1, title: 'TW/SL', detail: 'As printed on the college timetable', kind: 'free' },
+                { t: 910, n: 2, title: 'Mathematics course', detail: 'For lateral entry students. Ms. Kaveri P.', kind: 'theory' }],
+            4: [{ t: 540, n: 1, sub: 'BM&C' }, { t: 595, n: 1, sub: 'FM&HM' }, { t: 660, n: 1, sub: 'EGIP' }, { t: 715, n: 1, sub: 'SM' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A1: CAD Lab. Batch A2: EGSI Lab.', kind: 'lab' }],
+            5: [{ t: 540, n: 2, sub: 'FM&HM' }, { t: 660, n: 1, sub: 'MAT' }, { t: 715, n: 1, title: 'TW/SL', detail: 'As printed on the college timetable', kind: 'free' }, { t: 855, n: 3, title: 'Lab session', detail: 'Batch A2: CAD Lab. Batch A1: EGSI Lab.', kind: 'lab' }],
+            6: [{ t: 540, n: 1, sub: 'SM' }, { t: 595, n: 1, sub: 'MAT' }, { t: 660, n: 1, sub: 'CP' }, { t: 715, n: 1, sub: 'SM' }]
         },
         exams: []
     }

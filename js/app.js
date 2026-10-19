@@ -524,7 +524,7 @@
         $('#page-faculty').innerHTML = `<div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>Faculty</h1></div>
             <p class="muted" style="margin:-6px 2px 12px">Your ratings stay private on this device.</p>
             ${!FACULTY.length ? `<div class="sheet-paper empty"><b>Faculty not added yet</b>Faculty for ${esc(clsLabel())} will appear here once the class is added.</div>` : ''}
-            <div class="flat">${FACULTY.map(f => `<div class="fac"><span class="em" style="font-size:30px">${f.emoji}</span><div class="grow"><b>${esc(f.name)}</b><span class="s">${esc(f.subject)} · ${esc(f.dept)}</span></div>${starsHtml(f.name)}</div>`).join('')}</div>`;
+            <div class="flat">${FACULTY.map(f => `<div class="fac"><span class="em" style="font-size:30px">${f.emoji}</span><div class="grow"><b>${esc(f.name)}</b><span class="s">${esc(f.subject)}${f.dept ? ' · ' + esc(f.dept) : ''}</span></div>${starsHtml(f.name)}</div>`).join('')}</div>`;
     };
 
     // ---------- EVENTS ----------

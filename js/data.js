@@ -11,7 +11,7 @@ const BRANCHES = [
     { id: 'CSE-A', name: 'CSE – A',        long: 'Computer Science & Engineering, Section A', emoji: '💻' },
     { id: 'CSE-B', name: 'CSE – B',        long: 'Computer Science & Engineering, Section B', emoji: '💻' },
     { id: 'AIML',  name: 'CSE – AI & ML',  long: 'CSE (Artificial Intelligence & Machine Learning)', emoji: '🤖' },
-    { id: 'DS',    name: 'CSE – Data Science', long: 'CSE (Data Science)', emoji: '📊' },
+    { id: 'DS',    name: 'CSE – Data Science & Cyber', long: 'CSE (Data Science) and CSE (Cyber Security)', emoji: '📊' },
     { id: 'ISE',   name: 'ISE',            long: 'Information Science & Engineering', emoji: '🧩' },
     { id: 'ECE',   name: 'ECE',            long: 'Electronics & Communication Engineering', emoji: '📡' },
     { id: 'EEE',   name: 'EEE',            long: 'Electrical & Electronics Engineering', emoji: '⚡' },
@@ -81,6 +81,78 @@ const CLASS_DATA = {
             { id: 'prac',   name: 'Practical exams',  date: '2027-02-08' },
             { id: 'next',   name: 'Next semester',    date: '2027-02-22' }
         ]
+    }
+    ,
+    'CSE-B|3': {
+        note: 'Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: B1 is roll numbers 01 to 28, B2 is 29 to 59.',
+        subjects: [
+            { id: 'DSP',  code: '1BMATCS301', name: 'Distributions and Statistics Probability', faculty: 'Prof. K. Sangameshwar',  kind: 'theory', credits: 3 },
+            { id: 'JAVA', code: '1BCS302',    name: 'Object Oriented Programming with Java',    faculty: 'Mrs. Gowri Achappa / Dr. Sreedevi Malipatil', kind: 'theory', credits: 3 },
+            { id: 'DDCO', code: '1BCS303',    name: 'Digital Design and Computer Organization', faculty: 'Mr. Shridhar Bilagi',    kind: 'theory', credits: 3 },
+            { id: 'OS',   code: '1BCS304',    name: 'Operating Systems',                        faculty: 'Ms. Nithya Santhoshi H', kind: 'theory', credits: 3 },
+            { id: 'DS',   code: '1BCS305',    name: 'Data Structures and Applications',         faculty: 'Prof. Kavitha Juliet',   kind: 'theory', credits: 3 },
+            { id: 'DSL',  code: '1BCSL306',   name: 'Data Structures Laboratory',               faculty: 'Prof. Kavitha Juliet / Ms. Nithya Santhoshi H', kind: 'lab', credits: 1 },
+            { id: 'GIT',  code: '1BCSL307A',  name: 'Project Management (with Git)',            faculty: 'Dr. Bergi Veeresh Gowda', kind: 'lab',   credits: 1 },
+            { id: 'CP',   code: '1BCP308',    name: 'Community Project (Project-Based Learning) / Societal Project', faculty: 'Dr. H. Girisha', kind: 'project', credits: 1 }
+        ],
+        faculty: [
+            { name: 'Prof. K. Sangameshwar',    subject: 'Distributions and Statistics Probability', emoji: '👨‍🏫' },
+            { name: 'Mrs. Gowri Achappa',       subject: 'Object Oriented Programming with Java',    emoji: '👩‍🏫' },
+            { name: 'Dr. Sreedevi Malipatil',   subject: 'Object Oriented Programming with Java',    emoji: '👩‍🏫' },
+            { name: 'Mr. Shridhar Bilagi',      subject: 'Digital Design and Computer Organization', emoji: '👨‍🏫' },
+            { name: 'Ms. Nithya Santhoshi H',   subject: 'Operating Systems, Data Structures Laboratory', emoji: '👩‍🏫' },
+            { name: 'Prof. Kavitha Juliet',     subject: 'Data Structures and Applications, Data Structures Laboratory', emoji: '👩‍🏫' },
+            { name: 'Dr. Bergi Veeresh Gowda',  subject: 'Project Management (with Git)',            emoji: '👨‍🏫' },
+            { name: 'Dr. H. Girisha',           subject: 'Community Project / Societal Project',     emoji: '👨‍🏫' }
+        ],
+        timetable: {
+            1: [{ t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DSP' }, { t: 715, n: 1, sub: 'DS' }, { t: 855, n: 1, sub: 'DDCO' }, { t: 910, n: 1, sub: 'OS' }],
+            2: [{ t: 540, n: 1, sub: 'DSP' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'JAVA' }, { t: 855, n: 1, sub: 'OS' }, { t: 910, n: 2, sub: 'CP' }],
+            3: [{ t: 540, n: 1, sub: 'DS' }, { t: 595, n: 1, sub: 'DDCO' }, { t: 660, n: 1, sub: 'DSP' }, { t: 715, n: 1, sub: 'OS' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch B1: Data Structures Lab. Batch B2: Project Management (Git)', kind: 'lab' }],
+            4: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 1, sub: 'JAVA' }, { t: 715, n: 1, sub: 'DSP' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch B2: Data Structures Lab. Batch B1: Project Management (Git)', kind: 'lab' }],
+            5: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'DSP' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, sub: 'JAVA' },
+                { t: 855, n: 2, title: 'Library visit', detail: 'Read, borrow, revise', kind: 'free' }],
+            6: [{ t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 2, title: 'OOPS Lab', detail: 'Java programming lab', kind: 'lab' }]
+        },
+        exams: []
+    },
+    'DS|3': {
+        note: 'CSE (Data Science) and CSE (Cyber Security), Section A. Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: Batch 1 is roll numbers 01 to 30, Batch 2 is 31 onwards.',
+        subjects: [
+            { id: 'MATHS', code: '1BMATCS301', name: 'Probability, Distributions and Statistics', faculty: 'Dr. Veeresh B',               kind: 'theory', credits: 3 },
+            { id: 'JAVA',  code: '1BCS302',    name: 'Object Oriented Programming with Java',     faculty: 'Mrs. Gowri Achappa',          kind: 'theory', credits: 3 },
+            { id: 'DDCO',  code: '1BCS303',    name: 'Digital Design and Computer Organization',  faculty: 'Ms. Sumalatha',               kind: 'theory', credits: 3 },
+            { id: 'OS',    code: '1BCS304',    name: 'Operating Systems',                         faculty: 'Prof. A T Satya Narayana Reddy', kind: 'theory', credits: 3 },
+            { id: 'DS',    code: '1BCS305',    name: 'Data Structures and Applications',          faculty: 'Dr. H. M. Manhantesh',        kind: 'theory', credits: 3 },
+            { id: 'DSL',   code: '1BCSL306',   name: 'Data Structures Laboratory',                faculty: 'Dr. H. M. Manhantesh',        kind: 'lab',    credits: 1 },
+            { id: 'GIT',   code: '1BCSL307A',  name: 'Project Management (with Git)',             faculty: 'Prasannakumar S',             kind: 'lab',    credits: 1 },
+            { id: 'CP',    code: '1BCP308',    name: 'Community Project (Project-Based Learning)', faculty: 'Dr. Shiva Prasad K M',       kind: 'project', credits: 1 }
+        ],
+        faculty: [
+            { name: 'Dr. Veeresh B',                  subject: 'Probability, Distributions and Statistics', emoji: '👨‍🏫' },
+            { name: 'Mrs. Gowri Achappa',             subject: 'Object Oriented Programming with Java',     emoji: '👩‍🏫' },
+            { name: 'Ms. Sumalatha',                  subject: 'Digital Design and Computer Organization',  emoji: '👩‍🏫' },
+            { name: 'Prof. A T Satya Narayana Reddy', subject: 'Operating Systems',                         emoji: '👨‍🏫' },
+            { name: 'Dr. H. M. Manhantesh',           subject: 'Data Structures and Applications, Data Structures Laboratory', emoji: '👨‍🏫' },
+            { name: 'Prasannakumar S',                subject: 'Project Management (with Git)',             emoji: '👨‍🏫' },
+            { name: 'Dr. Shiva Prasad K M',           subject: 'Community Project',                         emoji: '👨‍🏫' }
+        ],
+        timetable: {
+            1: [{ t: 540, n: 1, sub: 'OS' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 1, sub: 'MATHS' }, { t: 715, n: 1, sub: 'JAVA' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch 1: Java Lab. Batch 2: Data Structures Lab.', kind: 'lab' }],
+            2: [{ t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DS' }, { t: 715, n: 1, sub: 'DDCO' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch 2: Java Lab. Batch 1: Data Structures Lab.', kind: 'lab' }],
+            3: [{ t: 540, n: 1, sub: 'DS' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'DDCO' }, { t: 715, n: 1, sub: 'OS' },
+                { t: 855, n: 1, sub: 'CP' }, { t: 910, n: 1, sub: 'OS' }, { t: 965, n: 1, title: 'Remedial class', detail: 'Extra help session', kind: 'free' }],
+            4: [{ t: 540, n: 1, sub: 'JAVA' }, { t: 595, n: 1, sub: 'MATHS' }, { t: 660, n: 1, sub: 'DS' }, { t: 715, n: 1, sub: 'OS' },
+                { t: 855, n: 1, sub: 'DDCO' }, { t: 910, n: 1, sub: 'MATHS' }, { t: 965, n: 1, title: 'NSS', detail: 'National Service Scheme', kind: 'free' }],
+            5: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'DS' }, { t: 660, n: 1, sub: 'OS' }, { t: 715, n: 1, title: 'NSS / Yoga', detail: 'National Service Scheme or Yoga', kind: 'free' },
+                { t: 855, n: 3, title: 'Git lab', detail: 'Project Management (with Git). Batch 1 and Batch 2.', kind: 'lab' }],
+            6: [{ t: 540, n: 1, sub: 'DDCO' }, { t: 595, n: 1, sub: 'JAVA' }, { t: 660, n: 1, sub: 'MATHS' }, { t: 715, n: 1, sub: 'CP' }]
+        },
+        exams: []
     }
 };
 

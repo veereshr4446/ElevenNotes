@@ -27,6 +27,59 @@ const DEFAULT_CLASS = { branch: 'CSE-A', sem: 3 };
 const PERIOD_MIN = 55;
 
 const CLASS_DATA = {
+    'CSE-A|1': {
+        note: 'Physics group, section A, Lecture Hall 09. Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batch 1 is roll numbers 01 to 30, batch 2 is 31 onwards.',
+        subjects: [
+            { id: 'MATHS', code: '1BMATS101',  name: 'Applied Mathematics I (Calculus and Linear Algebra: CSE Stream)', faculty: 'Mrs. G M Ambika',        kind: 'theory', credits: 0 },
+            { id: 'PHY',   code: '1BPHYS102',  name: 'Applied Physics (Quantum Physics and Applications, CSE stream)',  faculty: 'Dr. Nagabhushana N M',   kind: 'theory', credits: 0 },
+            { id: 'CED',   code: '1BCEDS103',  name: 'Computer-Aided Engineering Drawing for CSE Stream',               faculty: 'Dr. K Manjunatha',       kind: 'theory', credits: 0 },
+            { id: 'ESC',   code: '1BESC104B',  name: 'Introduction to Electrical Engineering',                          faculty: 'Ms. Rashmi H N',         kind: 'theory', credits: 0 },
+            { id: 'PSC',   code: '1BEIT105',   name: 'Programming in C',                                                faculty: 'Amruth',                 kind: 'theory', credits: 0 },
+            { id: 'SS',    code: '1BSKS106',   name: 'Soft Skills',                                                     faculty: 'K M Arun Kumar',         kind: 'theory', credits: 0 },
+            { id: 'KSK',   code: '1BKSKK109 / BKBKK109', name: 'Samskrutika Kannada / Balake Kannada',                faculty: 'Mr. Veeresh Swamy / Mrs. Chetana P M', kind: 'theory', credits: 0 },
+            { id: 'CPL',   code: '1BPOPL107',  name: 'C Programming Lab',                                               faculty: 'Amruth',                 kind: 'lab',    credits: 0 },
+            { id: 'IDT',   code: '1BIDTL158',  name: 'Innovation and Design Thinking Lab',                              faculty: 'Dr. Girisha H',          kind: 'lab',    credits: 0 }
+        ],
+        faculty: [
+            { name: 'Mrs. G M Ambika',        subject: 'Applied Mathematics I',                 emoji: '👩‍🏫' },
+            { name: 'Dr. Nagabhushana N M',   subject: 'Applied Physics',                       emoji: '👨‍🏫' },
+            { name: 'Dr. K Manjunatha',       subject: 'Computer-Aided Engineering Drawing',    emoji: '👨‍🏫' },
+            { name: 'Ms. Rashmi H N',         subject: 'Introduction to Electrical Engineering', emoji: '👩‍🏫' },
+            { name: 'Amruth',                 subject: 'Programming in C and C Programming Lab', emoji: '👨‍🏫' },
+            { name: 'K M Arun Kumar',         subject: 'Soft Skills',                           emoji: '👨‍🏫' },
+            { name: 'Dr. Girisha H',          subject: 'Innovation and Design Thinking Lab',    emoji: '👨‍🏫' },
+            { name: 'Mr. Veeresh Swamy',      subject: 'Samskrutika Kannada',                   emoji: '👨‍🏫' },
+            { name: 'Mrs. Chetana P M',       subject: 'Balake Kannada',                        emoji: '👩‍🏫' }
+        ],
+        timetable: {
+            1: [
+                { t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'CED' }, { t: 660, n: 1, sub: 'ESC' }, { t: 715, n: 1, sub: 'PSC' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch 1: CAED Lab. Batch 2: Innovation and Design Thinking Lab', kind: 'lab' }
+            ],
+            2: [
+                { t: 540, n: 1, sub: 'PHY' }, { t: 595, n: 1, sub: 'KSK' }, { t: 660, n: 1, sub: 'ESC' }, { t: 715, n: 1, sub: 'MATHS' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch 1: C Programming Lab. Batch 2: Physics Lab', kind: 'lab' }
+            ],
+            3: [
+                { t: 540, n: 1, sub: 'PHY' }, { t: 595, n: 1, sub: 'PSC' }, { t: 660, n: 1, sub: 'PHY' }, { t: 715, n: 1, sub: 'ESC' },
+                { t: 855, n: 1, sub: 'PSC' }, { t: 910, n: 2, title: 'Library / Assignment', detail: 'Read, borrow, revise', kind: 'free' }
+            ],
+            4: [
+                { t: 540, n: 1, sub: 'PSC' }, { t: 595, n: 1, sub: 'PHY' }, { t: 660, n: 1, sub: 'MATHS' }, { t: 715, n: 1, sub: 'SS' },
+                { t: 855, n: 3, title: 'Lab session', detail: 'Batch 2: CAED Lab. Batch 1: Innovation and Design Thinking Lab', kind: 'lab' }
+            ],
+            5: [
+                { t: 540, n: 1, sub: 'MATHS' },
+                { t: 595, n: 1, title: 'Lab session', detail: 'Batch 2: C Programming Lab. Batch 1: Physics Lab', kind: 'lab' },
+                { t: 660, n: 2, title: 'Lab session', detail: 'Batch 2: C Programming Lab. Batch 1: Physics Lab', kind: 'lab' },
+                { t: 855, n: 1, sub: 'PSC' }, { t: 910, n: 1, sub: 'ESC' }, { t: 965, n: 1, sub: 'PHY' }
+            ],
+            6: [
+                { t: 540, n: 1, sub: 'MATHS' }, { t: 595, n: 1, sub: 'ESC' }, { t: 660, n: 2, sub: 'CED' }
+            ]
+        },
+        exams: []
+    },
     'CSE-A|3': {
         note: 'Odd semester, AY 2026-27. Break 10:50 to 11:00, lunch 12:50 to 2:15. Lab batches: A1 is roll numbers 01 to 29, A2 is 30 to 58.',
         subjects: [

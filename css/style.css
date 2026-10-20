@@ -538,3 +538,8 @@ body[data-view="plan"] .fab { display: flex; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.pcard.playing .pcard-ico { animation: spin 4s linear infinite; }
+.music-btn.playing .i { animation: spin 4s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .pcard.playing .pcard-ico, .music-btn.playing .i { animation: none; } }

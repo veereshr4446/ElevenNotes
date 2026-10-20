@@ -87,7 +87,7 @@
         const fmt = t => isFinite(t) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '0:00';
         const sync = () => {
             const on = !a.paused;
-            btn.classList.toggle('playing', on); btn.setAttribute('aria-pressed', on);
+            btn.classList.toggle('playing', on); $('#pcard').classList.toggle('playing', on); btn.setAttribute('aria-pressed', on);
             $('#musicState').textContent = on ? 'Playing' : 'Paused';
             pb.innerHTML = on ? PAUSE : PLAY;
         };

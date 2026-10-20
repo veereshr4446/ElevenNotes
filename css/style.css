@@ -550,3 +550,10 @@ body[data-view="plan"] .fab { display: flex; }
 .vote.on .i { fill: #ed4956; stroke: #ed4956; animation: heartpop .35s ease; }
 @keyframes heartpop { 0% { transform: scale(.7); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .vote.on .i { animation: none; } }
+
+.install-card { display: flex; align-items: center; margin: 0 0 14px; border-radius: 20px; background: var(--brand-soft); border: 1px solid var(--line); }
+.install-main { flex: 1; display: flex; align-items: center; gap: 12px; padding: 12px 8px 12px 14px; text-align: left; min-width: 0; }
+.install-ico { font-size: 24px; }
+.install-main b { display: block; font-size: 15px; color: var(--brand-ink); }
+.install-main span.grow > span { font-size: 12.5px; color: var(--ink-2); }
+.install-x { width: 40px; height: 40px; margin-right: 6px; border-radius: 50%; color: var(--ink-2); font-size: 14px; flex: none; }

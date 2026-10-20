@@ -104,37 +104,12 @@
             profileDone: S.profile.name !== 'Student' && !!S.profile.usn
         });
     }
-    function xpTotal() {
-        const d = derived();
-        return d.tasksDone * 10 + d.focusSessions * 20 + d.notesAdded * 10 + d.rated * 5 + d.visits.length * 5 + d.bonusXp;
-    }
-    function levelInfo() {
-        const xp = xpTotal(), lvl = Math.floor(xp / 100) + 1;
-        return { xp, lvl, into: xp % 100, title: LEVELS[Math.min(lvl - 1, LEVELS.length - 1)] };
-    }
     function today() {
         const k = dkey();
         if (!S.daily || S.daily.date !== k) { S.daily = { date: k, tasksDone: 0, focusSessions: 0, added: 0, claimed: [] }; save('daily'); }
         return S.daily;
     }
-    function checkProgress() {
-        const d = today(), s = derived();
-        CHALLENGES.forEach(c => {
-            if (c.val(d) >= c.goal && !d.claimed.includes(c.id)) {
-                d.claimed.push(c.id);
-                S.stats.bonusXp += c.xp;
-                toast(`${c.text} (+${c.xp} XP)`, 'win', 'Challenge complete');
-            }
-        });
-        save('daily'); save('stats');
-        const earned = BADGES.filter(b => b.val(derived()) >= b.goal).map(b => b.id);
-        const fresh = earned.filter(id => !S.seen.includes(id));
-        if (fresh.length) {
-            S.seen = S.seen.concat(fresh); save('seen');
-            const b = BADGES.find(x => x.id === fresh[0]);
-            if (b.id !== 'hello') setTimeout(() => toast(b.name, 'win', 'Badge unlocked'), 400);
-        }
-    }
+    function checkProgress() { today(); save('daily'); save('stats'); }
     function bump(field, n = 1, dailyField) {
         S.stats[field] += n;
         if (dailyField) today()[dailyField] += 1;
@@ -192,8 +167,7 @@
 
         const pending = S.tasks.filter(t => !t.done);
         const soon = pending.filter(t => t.date).sort((a, b) => a.date.localeCompare(b.date))[0];
-        const ne = nextExam(), d = today();
-        const doneCh = CHALLENGES.filter(c => c.val(d) >= c.goal).length;
+        const ne = nextExam();
 
         $('#page-home').innerHTML = `
             <h1 class="hello">${greet}${named ? ', ' + esc(first) : ''}<small>${named ? 'Here is your day.' : 'Add your name in the Me tab to personalise this.'}</small></h1>
@@ -208,7 +182,6 @@
             <div class="flat">
                 <button data-act="nav" data-to="plan"><span class="em">📋</span><span class="grow"><b>${pending.length ? pending.length + ' task' + (pending.length > 1 ? 's' : '') + ' to do' : 'Nothing pending'}</b><span>${soon ? esc(soon.title) + ', ' + dueInfo(soon.date).text.toLowerCase() : (pending.length ? 'Open your list' : 'Add a task to plan your week')}</span></span><span class="go">›</span></button>
                 ${ne ? `<button data-act="tool" data-tab="count" data-exam="${esc(ne.e.id)}"><span class="em">⏳</span><span class="grow"><b>${ne.days === 0 ? 'Today: ' : ne.days + (ne.days === 1 ? ' day to ' : ' days to ')}${esc(ne.e.name)}</b><span>Open the countdown</span></span><span class="go">›</span></button>` : ''}
-                <button data-act="nav" data-to="me"><span class="em">🎯</span><span class="grow"><b>Today's challenges: ${doneCh} of ${CHALLENGES.length}</b><span>Finish them to earn XP and badges</span></span><span class="go">›</span></button>
             </div>
             <h2 class="sec-title">Jump to</h2>
             <div class="tiles">
@@ -412,7 +385,7 @@
          ['🍅', 'Focus timer', 'Pomodoro study timer', () => { go('tools'); showTool('focus'); }, 'pomodoro'],
          ['🎉', 'Events', 'College fests and activities. Coming soon', () => go('events'), 'fest'],
          ['💬', 'Community', 'Join the community', () => go('community')],
-         ['🏅', 'Badges and level', 'Your profile and progress', () => go('me'), 'xp challenge streak profile'],
+         ['👤', 'Profile and settings', 'Your profile, class, dark mode', () => go('me'), 'streak profile settings theme'],
          ['👨‍💻', 'About the developer', 'Meet Viresh', () => go('about')]
         ].forEach(a => add(a[0], a[1], a[2], a[3], a[4]));
         return out;
@@ -466,11 +439,22 @@
     };
 
     // ---------- ME ----------
+    function settingsSheet() {
+        openSheet('Settings', `<div class="flat">
+            <button data-act="pick-class"><span class="em">🎓</span><span class="grow"><b>My class</b><span>${esc(clsLabel())}</span></span><span class="go">›</span></button>
+            <button data-act="theme"><span class="em">🌙</span><span class="grow"><b>Dark mode</b><span>Easier on the eyes at night</span></span><span class="switch ${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}"></span></button>
+            <button data-act="feedback"><span class="em">💬</span><span class="grow"><b>Send feedback</b><span>Suggest a feature or report a bug</span></span><span class="go">›</span></button>
+            <button data-act="pro"><span class="em">✨</span><span class="grow"><b>ElevenNotes Pro</b><span>Plan, revise, own your progress</span></span><span class="go">›</span></button>
+            <button data-act="about-dev"><span class="em">👨‍💻</span><span class="grow"><b>About the developer</b><span>Meet Viresh</span></span><span class="go">›</span></button>
+            <button data-act="reset"><span class="em">🗑️</span><span class="grow"><b class="danger-text">Reset my data</b><span>Clears everything saved in this browser</span></span></button>
+        </div>`);
+    }
     R.me = function () {
-        const p = S.profile, L = levelInfo(), d = today(), s = derived();
+        const p = S.profile, s = derived();
         $('#page-me').innerHTML = `
+            <div class="me-top"><h1>Profile</h1><button class="icon-btn" data-act="settings" aria-label="Settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
             <div class="me-head">
-                <button class="avatar-ring" style="--p:${L.into}" data-act="avatar" aria-label="Change profile picture"><img src="${esc(p.avatar)}" alt="" /><span class="lvl">Lv ${L.lvl}</span></button>
+                <button class="avatar-ring" data-act="avatar" aria-label="Change profile picture"><img src="${esc(p.avatar)}" alt="" /></button>
                 <div><div class="me-name">${esc(p.name)}</div>${p.usn ? `<span class="usn-pill">${esc(p.usn)}</span>` : `<button class="usn-pill" data-act="edit-profile">Add your USN</button>`}</div>
             </div>
             <p class="bio">${esc(p.bio)}</p>
@@ -481,34 +465,6 @@
                 <div><b>${s.tasksDone}</b><span>tasks done</span></div>
                 <div><b>${s.focusMinutes}</b><span>focus min</span></div>
                 <div><b>${s.notesAdded}</b><span>notes shared</span></div>
-            </div>
-
-            <div class="level-card">
-                <div class="level-row"><b>Level ${L.lvl}: ${L.title}</b><span>${L.xp} XP</span></div>
-                <div class="bar"><i style="width:${L.into}%"></i></div>
-                <small>${100 - L.into} XP to level ${L.lvl + 1}. Finish tasks, focus sessions and notes to earn XP.</small>
-            </div>
-
-            <h2 class="sec-title">Today's challenges</h2>
-            <div class="flat">${CHALLENGES.map(c => {
-                const v = Math.min(c.val(d), c.goal), done = v >= c.goal;
-                return `<div class="challenge ${done ? 'done' : ''}"><span class="em">${done ? '🎉' : c.icon}</span><div class="grow"><b>${c.text}</b><div class="bar"><i style="width:${v / c.goal * 100}%"></i></div></div><span class="xp">${done ? 'Done' : v + '/' + c.goal + ' · +' + c.xp + ' XP'}</span></div>`;
-            }).join('')}</div>
-
-            <h2 class="sec-title">Badges <span class="muted">${BADGES.filter(b => b.val(s) >= b.goal).length} of ${BADGES.length}</span></h2>
-            <div class="badges">${BADGES.map(b => {
-                const v = b.val(s), got = v >= b.goal;
-                return `<button class="badge ${got ? '' : 'locked'}" data-act="badge" data-id="${b.id}"><span class="medal">${b.icon}</span><b>${b.name}</b><small>${got ? 'Earned' : (b.goal > 1 ? Math.min(v, b.goal) + '/' + b.goal : b.how)}</small></button>`;
-            }).join('')}</div>
-
-            <h2 class="sec-title">Settings</h2>
-            <div class="flat">
-                <button data-act="pick-class"><span class="em">🎓</span><span class="grow"><b>My class</b><span>${esc(clsLabel())}</span></span><span class="go">›</span></button>
-                <button data-act="theme"><span class="em">🌙</span><span class="grow"><b>Dark mode</b><span>Easier on the eyes at night</span></span><span class="switch ${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}"></span></button>
-                <button data-act="feedback"><span class="em">💬</span><span class="grow"><b>Send feedback</b><span>Suggest a feature or report a bug</span></span><span class="go">›</span></button>
-                <button data-act="pro"><span class="em">✨</span><span class="grow"><b>ElevenNotes Pro</b><span>Plan, revise, own your progress</span></span><span class="go">›</span></button>
-                <button data-act="nav" data-to="about"><span class="em">👨‍💻</span><span class="grow"><b>About the developer</b><span>Meet Viresh</span></span><span class="go">›</span></button>
-                <button data-act="reset"><span class="em">🗑️</span><span class="grow"><b class="danger-text">Reset my data</b><span>Clears everything saved in this browser</span></span></button>
             </div>`;
     };
 
@@ -801,8 +757,10 @@
             const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
             document.documentElement.dataset.theme = next; set('theme', next);
             if (next === 'dark' && !S.stats.darkTried) { S.stats.darkTried = true; save('stats'); checkProgress(); }
-            if (current === 'me') renderCurrent();
+            const sw = $('#sheetBody .switch'); if (sw) sw.classList.toggle('on', next === 'dark');
         },
+        settings: settingsSheet,
+        'about-dev'() { closeSheet(); go('about'); },
         pro: proSheet, feedback: feedbackSheet, avatar: avatarSheet, 'edit-profile': profileSheet,
         'close-sheet': closeSheet,
         back() { if (history.length > 1) history.back(); else go('home'); },

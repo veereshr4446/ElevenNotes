@@ -324,8 +324,8 @@ body[data-view="plan"] .fab { display: flex; }
 
 /* ---------- ME ---------- */
 .me-head { display: flex; gap: 16px; align-items: center; margin: 8px 0 6px; }
-.avatar-ring { --p: 0; position: relative; width: 96px; height: 96px; border-radius: 50%; padding: 5px; flex: none;
-    background: conic-gradient(from 200deg, #5b5bd6, #9b8cff, #ffd84d, #5b5bd6); }
+.avatar-ring { position: relative; width: 96px; height: 96px; border-radius: 50%; padding: 5px; flex: none;
+    background: conic-gradient(var(--brand) 0 30%, var(--brand-soft) 0); }
 .avatar-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: var(--card); border: 3px solid var(--paper); }
 .me-top { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 4px; }
 .me-top h1 { font-size: 22px; margin: 0; }

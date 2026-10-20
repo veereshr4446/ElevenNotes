@@ -268,11 +268,23 @@
         } finally { clearTimeout(to); }
     }
 
+    function voterId() {
+        let v = get('voter', null);
+        if (!v) { v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); set('voter', v); }
+        return v;
+    }
     async function loadLibrary() {
         if (!libOn() || ui.lib.loading) return;
         ui.lib.loading = true; ui.lib.error = false;
         if (current === 'study' && ui.studyTab === 'library') R.study();
-        try { ui.lib.items = (await rpc('list_resources', { p_class: classKey() })) || []; ui.lib.loaded = true; }
+        try {
+            let items;
+            try { items = await rpc('list_resources', { p_class: classKey(), p_voter: voterId() }); ui.lib.votes = true; }
+            catch (e1) { items = await rpc('list_resources', { p_class: classKey() }); ui.lib.votes = false; }   // upvotes SQL not run yet
+            ui.lib.items = (items || []).map(n => Object.assign({ votes: 0, voted: false }, n))
+                .sort((a, b) => (b.votes - a.votes) || (new Date(b.created_at) - new Date(a.created_at)));
+            ui.lib.loaded = true;
+        }
         catch (e) { ui.lib.error = true; ui.lib.loaded = true; }
         ui.lib.loading = false;
         if (current === 'study' && ui.studyTab === 'library') R.study();
@@ -297,7 +309,7 @@
             <div class="note" data-hay="${esc(libItemHay(n))}" ${q && !libItemHay(n).includes(q) ? 'hidden' : ''}>
                 <div class="note-top"><span class="code-chip">${esc(n.subject)}</span><span class="date-sm">${esc(new Date(n.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span></div>
                 <h3>${esc(n.title)}</h3><p>Shared by ${esc(n.uploader)}${mine.includes(n.id) ? ' <span class="tag">You</span>' : ''}</p>
-                <div class="note-actions"><a class="link-btn" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Open link</a><button class="del" data-act="lib-del" data-id="${esc(n.id)}">Delete</button>${reported.includes(n.id) ? '<span class="del off">Reported</span>' : `<button class="del" data-act="lib-report" data-id="${esc(n.id)}">Report</button>`}</div>
+                <div class="note-actions">${L.votes ? `<button class="vote ${n.voted ? 'on' : ''}" data-act="lib-vote" data-id="${esc(n.id)}" aria-pressed="${n.voted}" aria-label="Upvote"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V6M6 12l6-6 6 6"/></svg><span>${n.votes}</span></button>` : ''}<a class="link-btn" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Open link</a><button class="del" data-act="lib-del" data-id="${esc(n.id)}">Delete</button>${reported.includes(n.id) ? '<span class="del off">Reported</span>' : `<button class="del" data-act="lib-report" data-id="${esc(n.id)}">Report</button>`}</div>
             </div>`).join('')}</div><div class="empty" id="libNone" hidden><b>No match</b>Try a different subject or title.</div>`;
         return `<p class="fine" style="margin:0 0 12px">Notes shared by your classmates as Google Drive links. Anyone can upload. Only the person who uploaded can delete, using their 6-digit PIN.</p>
             <div class="lib-actions"><button class="btn primary small" data-act="lib-add">Upload notes</button><button class="btn ghost small" data-act="lib-refresh">${L.loading ? 'Loading…' : 'Refresh'}</button></div>
@@ -457,11 +469,26 @@
     };
 
     // ---------- ME ----------
+    // ---------- install as app ----------
+    let installEvt = null;
+    const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+    window.addEventListener('appinstalled', () => { installEvt = null; toast('ElevenNotes is installed on your home screen.', 'win', 'Installed'); closeSheet(); });
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) navigator.serviceWorker.register('sw.js').catch(() => {});
+    function installApp() {
+        if (installEvt) { const e = installEvt; installEvt = null; e.prompt(); return; }
+        const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        openSheet('Add to home screen', `<ol class="steps">${ios
+            ? '<li>Tap the <b>Share</b> button in Safari.</li><li>Choose <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. ElevenNotes opens like an app.</li>'
+            : '<li>Tap the <b>⋮ menu</b> in your browser.</li><li>Choose <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Tap <b>Install</b>. ElevenNotes opens like an app.</li>'}</ol>
+            <p class="fine">It opens full screen, loads fast and still works without internet for your timetable and tasks.</p>`);
+    }
     function settingsSheet() {
         openSheet('Settings', `<div class="flat">
             <button data-act="pick-class"><span class="em">🎓</span><span class="grow"><b>My class</b><span>${esc(clsLabel())}</span></span><span class="go">›</span></button>
             <button data-act="theme"><span class="em">🌙</span><span class="grow"><b>Dark mode</b><span>Easier on the eyes at night</span></span><span class="switch ${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}"></span></button>
             <button data-act="feedback"><span class="em">💬</span><span class="grow"><b>Send feedback</b><span>Suggest a feature or report a bug</span></span><span class="go">›</span></button>
+            ${isStandalone() ? '' : '<button data-act="install"><span class="em">📲</span><span class="grow"><b>Install app</b><span>Add ElevenNotes to your home screen</span></span><span class="go">›</span></button>'}
             <button data-act="pro"><span class="em">✨</span><span class="grow"><b>ElevenNotes Pro</b><span>Plan, revise, own your progress</span></span><span class="go">›</span></button>
             <button data-act="about-dev"><span class="em">👨‍💻</span><span class="grow"><b>About the developer</b><span>Meet Viresh</span></span><span class="go">›</span></button>
             <button data-act="reset"><span class="em">🗑️</span><span class="grow"><b class="danger-text">Reset my data</b><span>Clears everything saved in this browser</span></span></button>
@@ -793,6 +820,7 @@
             const sw = $('#sheetBody .switch'); if (sw) sw.classList.toggle('on', next === 'dark');
         },
         settings: settingsSheet,
+        install: installApp,
         'about-dev'() { closeSheet(); openDev(); },
         'close-dev': closeDev,
         pro: proSheet, feedback: feedbackSheet, avatar: avatarSheet, 'edit-profile': profileSheet,
@@ -818,6 +846,14 @@
         'lib-add'() { libAddSheet(); },
         'lib-refresh'() { ui.lib.loaded = false; loadLibrary(); },
         'lib-del'(t) { libDelSheet(t.dataset.id); },
+        'lib-vote'(t) {
+            const n = ui.lib.items.find(x => x.id === t.dataset.id); if (!n) return;
+            n.voted = !n.voted; n.votes += n.voted ? 1 : -1; renderCurrent();
+            rpc('vote_resource', { p_id: n.id, p_voter: voterId() }).catch(() => {
+                n.voted = !n.voted; n.votes += n.voted ? 1 : -1; renderCurrent();
+                toast('Could not save your vote. Please try again.', 'err');
+            });
+        },
         'lib-report'(t) {
             const rep = get('reportedLib', []);
             if (rep.includes(t.dataset.id)) return;

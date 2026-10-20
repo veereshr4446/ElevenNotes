@@ -46,7 +46,7 @@
         focusMin: get('focusMin', 25),
         sessions: get('sessions', [])
     };
-    const ui = { lib: { items: [], loaded: false, loading: false, error: false }, libFilter: 'all', studyTab: 'subjects', day: 0, noteFilter: 'all', planFilter: 'all', exam: 'last' };
+    const ui = { lib: { items: [], loaded: false, loading: false, error: false }, libQ: '', studyTab: 'subjects', day: 0, planFilter: 'all', exam: 'last' };
 
     const save = k => set(k, S[k]);
 
@@ -215,7 +215,7 @@
                 <button class="tile" data-act="nav" data-to="faculty"><span>👩‍🏫</span>Faculty</button>
                 <button class="tile" data-act="tool" data-tab="focus"><span>🍅</span>Focus</button>
                 <button class="tile" data-act="tool" data-tab="sgpa"><span>🎓</span>SGPA</button>
-                <button class="tile" data-act="study-tab" data-tab="library"><span>🔗</span>Shared</button>
+                <button class="tile" data-act="study-tab" data-tab="library"><span>📝</span>Notes</button>
                 <button class="tile" data-act="nav" data-to="events"><span>🎉</span>Events</button>
                 <button class="tile" data-act="nav" data-to="community"><span>💬</span>Community</button>
             </div>`;
@@ -223,7 +223,7 @@
 
     // ---------- STUDY ----------
     R.study = function () {
-        const tabs = [['subjects', 'Subjects'], ['timetable', 'Timetable'], ['notes', 'Notes'], ['library', 'Shared']];
+        const tabs = [['subjects', 'Subjects'], ['timetable', 'Timetable'], ['library', 'Notes']];
         let body = '';
         if (ui.studyTab === 'subjects') {
             body = !SUBJECTS.length ? `<div class="sheet-paper empty"><b>Subjects not added yet</b>The subjects for ${esc(clsLabel())} are not in ElevenNotes yet. You can still use tasks, notes, the shared library and all tools.</div>` : `<div class="flat">${SUBJECTS.map(s => `
@@ -244,22 +244,9 @@
                     return `<div class="row ${live ? 'live' : ''}"><span class="code-chip ${info.kind}" style="min-width:76px">${fmtTime(e.t)}</span><span class="grow">${live ? '<span class="tag live"><i></i>Now</span>' : ''}<b>${esc(info.title)}</b><span>${esc(info.sub)}</span></span></div>`;
                 }).join('')}</div>
                 <p class="fine">${esc(CD.note)} Always check your official college timetable too.</p>`;
-        } else if (ui.studyTab === 'library') {
+        } else {
             body = libraryHtml();
             if (libOn() && !ui.lib.loaded && !ui.lib.loading) loadLibrary();
-        } else {
-            const f = ui.noteFilter;
-            const notes = S.notes.filter(n => f === 'all' || n.subject === f);
-            const opts = ['all'].concat(SUBJECTS.map(s => s.id), ['General']);
-            body = `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div class="chips" style="margin:0">${opts.map(o => `<button class="chip ${f === o ? 'on' : ''}" data-act="note-filter" data-f="${o}">${o === 'all' ? 'All' : o}</button>`).join('')}</div></div>
-                <div style="margin:12px 0"><button class="btn primary small" data-act="add-note">Add a note</button></div>
-                ${notes.length ? `<div class="flat">${notes.map(n => `
-                    <div class="note">
-                        <div class="note-top"><span class="code-chip">${esc(n.subject)}</span><span class="date-sm">${esc(n.date)}</span></div>
-                        <h3>${esc(n.title)}</h3>${n.desc ? `<p>${esc(n.desc)}</p>` : ''}
-                        <div class="note-actions">${n.link ? `<a class="link-btn" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">Open link</a>` : ''}<button class="del" data-act="del-note" data-id="${n.id}">Delete</button></div>
-                    </div>`).join('')}</div>`
-                    : `<div class="sheet-paper empty"><b>No notes here yet</b>Save a Google Drive link to your notes, organised by subject.</div>`}`;
         }
         $('#page-study').innerHTML = `<h1 class="ptitle">Study</h1>
             <button class="class-pill" data-act="pick-class" aria-label="Change class">🎓 ${esc(clsLabel())} <span>Change</span></button>
@@ -300,27 +287,38 @@
         if (current === 'study' && ui.studyTab === 'library') R.study();
     }
 
+    function libItemHay(n) { return (n.subject + ' ' + n.title + ' ' + n.uploader).toLowerCase(); }
     function libraryHtml() {
-        if (!libOn()) return `<div class="sheet-paper empty"><b>Shared library is not switched on yet</b>Once it is, you can share Google Drive links with your class here. For now, use the Notes tab for your own links.</div>`;
-        const L = ui.lib, f = ui.libFilter;
-        const mine = get('mineLib', []);
-        const subs = ['all'].concat(Array.from(new Set(L.items.map(i => i.subject))));
-        const items = L.items.filter(i => f === 'all' || i.subject === f);
-        let list;
-        if (L.loading && !L.items.length) list = `<div class="sheet-paper empty"><b>Loading shared links…</b></div>`;
-        else if (L.error) list = `<div class="sheet-paper empty"><b>Could not load the library</b>Check your internet and tap Refresh.</div>`;
-        else if (!items.length) list = `<div class="sheet-paper empty"><b>Nothing shared here yet</b>Be the first. Tap “Share a link” to add a Google Drive link for your class.</div>`;
-        else list = `<div class="flat">${items.map(n => `
+        const legacy = S.notes.length ? `<h2 class="sec-title">Saved on this device</h2><div class="flat">${S.notes.map(n => `
             <div class="note">
+                <div class="note-top"><span class="code-chip">${esc(n.subject)}</span><span class="date-sm">${esc(n.date)}</span></div>
+                <h3>${esc(n.title)}</h3>${n.desc ? `<p>${esc(n.desc)}</p>` : ''}
+                <div class="note-actions">${n.link ? `<a class="link-btn" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">Open link</a>` : ''}<button class="del" data-act="del-note" data-id="${esc(n.id)}">Delete</button></div>
+            </div>`).join('')}</div>` : '';
+        if (!libOn()) return `<div class="sheet-paper empty"><b>Notes sharing is not switched on yet</b>Once it is, you can share Google Drive links with your class here.</div>${legacy}`;
+        const L = ui.lib, q = ui.libQ.trim().toLowerCase();
+        const mine = get('mineLib', []), reported = get('reportedLib', []);
+        let list;
+        if (L.loading && !L.items.length) list = `<div class="sheet-paper empty"><b>Loading notes…</b></div>`;
+        else if (L.error) list = `<div class="sheet-paper empty"><b>Could not load the notes</b>Check your internet and tap Refresh.</div>`;
+        else if (!L.items.length) list = `<div class="sheet-paper empty"><b>No notes here yet</b>Be the first. Tap “Upload notes” to add a Google Drive link for your class.</div>`;
+        else list = `<div class="flat" id="libList">${L.items.map(n => `
+            <div class="note" data-hay="${esc(libItemHay(n))}" ${q && !libItemHay(n).includes(q) ? 'hidden' : ''}>
                 <div class="note-top"><span class="code-chip">${esc(n.subject)}</span><span class="date-sm">${esc(new Date(n.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }))}</span></div>
                 <h3>${esc(n.title)}</h3><p>Shared by ${esc(n.uploader)}${mine.includes(n.id) ? ' <span class="tag">You</span>' : ''}</p>
-                <div class="note-actions"><a class="link-btn" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Open link</a><button class="del" data-act="lib-del" data-id="${esc(n.id)}">Delete</button>${get('reportedLib', []).includes(n.id) ? '<span class="del off">Reported</span>' : `<button class="del" data-act="lib-report" data-id="${esc(n.id)}">Report</button>`}</div>
-            </div>`).join('')}</div>`;
-        return `<p class="fine" style="margin:0 0 12px">Drive links shared by your classmates. Anyone can add one. Only the person who shared it can delete it, using their 6-digit PIN.</p>
-            <div class="lib-actions"><button class="btn primary small" data-act="lib-add">Share a link</button><button class="btn ghost small" data-act="lib-refresh">${L.loading ? 'Loading…' : 'Refresh'}</button></div>
-            ${subs.length > 2 ? `<div class="chips">${subs.map(o => `<button class="chip ${f === o ? 'on' : ''}" data-act="lib-filter" data-f="${esc(o)}">${o === 'all' ? 'All' : esc(o)}</button>`).join('')}</div>` : ''}
+                <div class="note-actions"><a class="link-btn" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">Open link</a><button class="del" data-act="lib-del" data-id="${esc(n.id)}">Delete</button>${reported.includes(n.id) ? '<span class="del off">Reported</span>' : `<button class="del" data-act="lib-report" data-id="${esc(n.id)}">Report</button>`}</div>
+            </div>`).join('')}</div><div class="empty" id="libNone" hidden><b>No match</b>Try a different subject or title.</div>`;
+        return `<p class="fine" style="margin:0 0 12px">Notes shared by your classmates as Google Drive links. Anyone can upload. Only the person who uploaded can delete, using their 6-digit PIN.</p>
+            <div class="lib-actions"><button class="btn primary small" data-act="lib-add">Upload notes</button><button class="btn ghost small" data-act="lib-refresh">${L.loading ? 'Loading…' : 'Refresh'}</button></div>
+            ${L.items.length ? `<input class="lib-search" id="libSearch" type="search" placeholder="Search by subject or title" value="${esc(ui.libQ)}" autocomplete="off" aria-label="Search notes" />` : ''}
             ${list}
-            <p class="fine">Make sure the Drive link is set to “Anyone with the link can view”. Only Google Drive and Docs links are accepted. Report anything that does not belong here.</p>`;
+            <p class="fine">Make sure the Drive link is set to “Anyone with the link can view”. Only Google Drive and Docs links are accepted. Report anything that does not belong here.</p>${legacy}`;
+    }
+    function filterLib(q) {
+        ui.libQ = q; q = q.trim().toLowerCase();
+        let shown = 0;
+        $$('#libList .note').forEach(el => { const ok = !q || el.dataset.hay.includes(q); el.hidden = !ok; if (ok) shown++; });
+        const none = $('#libNone'); if (none) none.hidden = shown > 0;
     }
 
     function randomPin() {
@@ -328,21 +326,21 @@
         return String(a[0] % 1000000).padStart(6, '0');
     }
 
-    function libAddSheet() {
-        openSheet('Share a Drive link', `<form data-form="share">
-            <label>Title<input name="title" maxlength="80" required placeholder="e.g. DSA unit 3 notes" /></label>
-            <label>Subject<select name="subject">${subjectOptions('General')}</select></label>
+    function libAddSheet(subject) {
+        openSheet('Upload notes', `<form data-form="share">
+            <label>Subject name<input name="subject" maxlength="20" required value="${esc(subject || '')}" placeholder="e.g. DSA, Maths, Java" autocapitalize="words" /></label>
+            <label>Title<input name="title" maxlength="80" required placeholder="e.g. Unit 3 notes" /></label>
             <label>Google Drive link<input type="url" name="url" required placeholder="https://drive.google.com/..." /></label>
             <label>Your name <span class="opt">(shown to others)</span><input name="uploader" maxlength="30" value="${esc(S.profile.name)}" /></label>
             <label>Delete PIN <span class="opt">(6 digits, you will need it to delete)</span>
                 <span class="pin-row"><input name="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" minlength="6" required placeholder="------" autocomplete="off" /><button type="button" class="btn ghost small" data-act="pin-gen">Make one for me</button></span></label>
-            <button class="btn primary block" type="submit">Share</button></form>`);
+            <button class="btn primary block" type="submit">Upload</button></form>`);
     }
 
     function receiptSheet(d) {
-        const text = `ElevenNotes shared link\nTitle: ${d.title}\nSubject: ${d.subject}\nLink: ${d.url}\nShared by: ${d.uploader}\nDate: ${d.date}\nDelete PIN: ${d.pin}\n\nKeep this PIN safe. It is the only way to delete this link, and it cannot be recovered.`;
+        const text = `ElevenNotes notes link\nTitle: ${d.title}\nSubject: ${d.subject}\nLink: ${d.url}\nShared by: ${d.uploader}\nDate: ${d.date}\nDelete PIN: ${d.pin}\n\nKeep this PIN safe. It is the only way to delete this link, and it cannot be recovered.`;
         let copied = false;
-        openSheet('Shared. Save your PIN', `<div class="ticket">
+        openSheet('Uploaded. Save your PIN', `<div class="ticket">
                 <div class="ticket-row"><span>Title</span><b>${esc(d.title)}</b></div>
                 <div class="ticket-row"><span>Subject</span><b>${esc(d.subject)}</b></div>
                 <div class="ticket-row"><span>Link</span><b class="brk">${esc(d.url)}</b></div>
@@ -402,12 +400,12 @@
         }));
         SUBJECTS.forEach(s => add('📘', s.name, `${s.id} · ${s.faculty}`, () => subjectSheet(s.id), s.code + ' subject'));
         FACULTY.forEach(f => add('👩‍🏫', f.name, f.subject, () => go('faculty'), 'faculty teacher staff'));
-        S.notes.forEach(n => add('📝', n.title, 'Your note · ' + n.subject, () => { ui.studyTab = 'notes'; ui.noteFilter = 'all'; go('study'); }, n.desc));
+        S.notes.forEach(n => add('📝', n.title, 'Your saved note · ' + n.subject, () => { ui.studyTab = 'library'; go('study'); }, n.desc));
         S.tasks.forEach(t => add(t.done ? '✅' : '📋', t.title, 'Your task · ' + t.subject, () => go('plan')));
         ui.lib.items.forEach(i => add('🔗', i.title, 'Shared · ' + i.subject, () => { ui.studyTab = 'library'; go('study'); }, i.uploader));
         [['🗓️', 'Timetable', 'Your weekly classes', () => { ui.studyTab = 'timetable'; go('study'); }, 'schedule classes today'],
          ['📘', 'Subjects', 'All subjects of your class', () => { ui.studyTab = 'subjects'; go('study'); }],
-         ['🔗', 'Shared library', 'Drive links from your class', () => { ui.studyTab = 'library'; go('study'); }, 'notes pdf drive'],
+         ['📝', 'Notes', 'Drive links shared by your class', () => { ui.studyTab = 'library'; go('study'); }, 'shared library pdf drive upload'],
          ['🎓', 'SGPA calculator', 'Estimate your SGPA', () => { go('tools'); showTool('sgpa'); }, 'grade cgpa marks'],
          ['📈', 'Attendance planner', 'Plan how many classes to attend', () => { go('tools'); showTool('att'); }, 'percent bunk'],
          ['⏳', 'Exam countdown', 'Days left for your dates', () => { go('tools'); showTool('count'); }, 'exam date'],
@@ -430,7 +428,7 @@
         q = q.trim().toLowerCase();
         const tokens = q.split(/\s+/).filter(Boolean);
         let res;
-        if (!tokens.length) res = ui.sIndex.filter(r => /Timetable|SGPA|Subjects|Shared library|Focus/.test(r.title) && r.sub !== 'Your class').slice(0, 5).concat([{ icon: '🎓', title: 'Change my class', sub: clsLabel(), run: pickerSheet }]);
+        if (!tokens.length) res = ui.sIndex.filter(r => /Timetable|SGPA|Subjects|Notes|Focus/.test(r.title) && r.sub !== 'Your class').slice(0, 5).concat([{ icon: '🎓', title: 'Change my class', sub: clsLabel(), run: pickerSheet }]);
         else res = ui.sIndex.filter(r => tokens.every(t => r.hay.includes(t))).slice(0, 12);
         ui.sRes = res;
         $('#srchOut').innerHTML = res.length ? res.map((r, i) => `<button data-act="srch-go" data-i="${i}"><span class="em">${r.icon}</span><span class="grow"><b>${esc(r.title)}</b><span>${esc(r.sub)}</span></span><span class="go">›</span></button>`).join('')
@@ -482,7 +480,7 @@
                 <div><b>${Math.max(s.streak, 1)}</b><span>day streak</span></div>
                 <div><b>${s.tasksDone}</b><span>tasks done</span></div>
                 <div><b>${s.focusMinutes}</b><span>focus min</span></div>
-                <div><b>${S.notes.length}</b><span>notes</span></div>
+                <div><b>${s.notesAdded}</b><span>notes shared</span></div>
             </div>
 
             <div class="level-card">
@@ -709,14 +707,6 @@
             <label>Due date <span class="opt">(optional)</span><input type="date" name="date" /></label>
             <button class="btn primary block" type="submit">Save task</button></form>`);
     }
-    function noteSheet(subject) {
-        openSheet('Add a note', `<form data-form="note">
-            <label>Title<input name="title" maxlength="80" required placeholder="e.g. DSA unit 3 summary" /></label>
-            <label>Subject<select name="subject">${subjectOptions(subject || 'General')}</select></label>
-            <label>Link <span class="opt">(optional)</span><input type="url" name="link" placeholder="https://drive.google.com/..." /></label>
-            <label>Short description <span class="opt">(optional)</span><textarea name="desc" rows="2" maxlength="140"></textarea></label>
-            <button class="btn primary block" type="submit">Save note</button></form>`);
-    }
     function profileSheet() {
         const p = S.profile;
         openSheet('Edit profile', `<form data-form="profile">
@@ -743,11 +733,11 @@
     }
     function subjectSheet(id) {
         const s = SUB[id];
-        const nNotes = S.notes.filter(n => n.subject === id).length, nTasks = S.tasks.filter(t => t.subject === id && !t.done).length;
+        const nTasks = S.tasks.filter(t => t.subject === id && !t.done).length;
         openSheet(s.id, `<p><b>${esc(s.name)}</b><br><span class="muted">${esc(s.code)}</span></p>
             <p class="muted" style="margin-bottom:4px">Taught by ${esc(s.faculty)}</p>${starsHtml(s.faculty)}
-            <p class="muted" style="margin-top:12px">${nNotes} note${nNotes === 1 ? '' : 's'}, ${nTasks} open task${nTasks === 1 ? '' : 's'}</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="note-for" data-id="${id}">Add a note</button><button class="btn ghost" data-act="task-for" data-id="${id}">Add a task</button></div>`);
+            <p class="muted" style="margin-top:12px">${nTasks} open task${nTasks === 1 ? '' : 's'}</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" data-act="note-for" data-id="${id}">Upload notes</button><button class="btn ghost" data-act="task-for" data-id="${id}">Add a task</button></div>`);
     }
     function examSheet() {
         openSheet('Add your own date', `<form data-form="exam">
@@ -760,16 +750,18 @@
         async share(f) {
             const title = f.title.value.trim(), url = f.url.value.trim(), pin = f.pin.value.trim();
             if (title.length < 2) { formError(f, 'Please add a title.'); return; }
+            if (!f.subject.value.trim()) { formError(f, 'Please type the subject name.'); return; }
             if (!DRIVE_RE.test(url)) { formError(f, 'Please paste a Google Drive or Google Docs link.'); return; }
             if (!/^[0-9]{6}$/.test(pin)) { formError(f, 'The PIN must be exactly 6 digits.'); return; }
-            const btn = f.querySelector('[type=submit]'); btn.disabled = true; btn.textContent = 'Sharing…';
-            const d = { title, url, pin, subject: f.subject.value, uploader: f.uploader.value.trim() || 'Student', date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) };
+            const btn = f.querySelector('[type=submit]'); btn.disabled = true; btn.textContent = 'Uploading…';
+            const d = { title, url, pin, subject: f.subject.value.trim(), uploader: f.uploader.value.trim() || 'Student', date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) };
             try {
                 const id = await rpc('add_resource', { p_class: classKey(), p_title: d.title, p_subject: d.subject, p_url: d.url, p_uploader: d.uploader, p_pin: pin });
                 const mine = get('mineLib', []); mine.push(id); set('mineLib', mine.slice(-100));
                 ui.lib.loaded = false; ui.lib.items = [];
+                bump('notesAdded', 1, 'added');
                 closeSheet(); receiptSheet(d); loadLibrary();
-            } catch (e) { btn.disabled = false; btn.textContent = 'Share'; formError(f, 'Could not share. Check your internet connection and try again.'); }
+            } catch (e) { btn.disabled = false; btn.textContent = 'Upload'; formError(f, 'Could not upload. Check your internet connection and try again.'); }
         },
         async unshare(f) {
             const id = f.id.value, pin = f.pin.value.trim();
@@ -786,14 +778,6 @@
             const title = f.title.value.trim(); if (!title) return;
             S.tasks.unshift({ id: uid(), title, subject: f.subject.value, priority: f.priority.value, date: f.date.value || '', done: false, counted: false });
             save('tasks'); bump('tasksDone', 0, 'added');
-            closeSheet(); renderCurrent();
-        },
-        note(f) {
-            const title = f.title.value.trim(), link = f.link.value.trim();
-            if (!title) return;
-            if (link && !/^https?:\/\//i.test(link)) { formError(f, 'Paste a full link that starts with https://'); return; }
-            S.notes.unshift({ id: uid(), title, subject: f.subject.value, link, desc: f.desc.value.trim(), date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) });
-            save('notes'); bump('notesAdded', 1, 'added');
             closeSheet(); renderCurrent();
         },
         profile(f) {
@@ -831,7 +815,7 @@
         'study-tab'(t) { ui.studyTab = t.dataset.tab; if (current !== 'study') go('study'); else renderCurrent(); },
         day(t) { ui.day = +t.dataset.d; renderCurrent(); },
         subject(t) { subjectSheet(t.dataset.id); },
-        'note-for'(t) { noteSheet(t.dataset.id); },
+        'note-for'(t) { if (libOn()) libAddSheet(t.dataset.id); else toast('Notes sharing is not switched on yet.', 'err'); },
         'task-for'(t) { taskSheet(t.dataset.id); },
         search: searchSheet,
         'srch-go'(t) { const r = ui.sRes[+t.dataset.i]; if (!r) return; closeSheet(); r.run(); },
@@ -841,7 +825,6 @@
         'pick-save'() { if (pick.b === CLS_BRANCH.id && pick.s === CLS.sem) { set('class', { branch: pick.b, sem: pick.s }); set('classAsked', true); closeSheet(); if (current === 'me') renderCurrent(); } else setClass(pick.b, pick.s); },
         'lib-add'() { libAddSheet(); },
         'lib-refresh'() { ui.lib.loaded = false; loadLibrary(); },
-        'lib-filter'(t) { ui.libFilter = t.dataset.f; renderCurrent(); },
         'lib-del'(t) { libDelSheet(t.dataset.id); },
         'lib-report'(t) {
             const rep = get('reportedLib', []);
@@ -854,9 +837,7 @@
             });
         },
         'pin-gen'(t) { const i = t.closest('form').pin; i.value = randomPin(); i.focus(); },
-        'add-note'() { noteSheet(); },
         'add-task'() { taskSheet(); },
-        'note-filter'(t) { ui.noteFilter = t.dataset.f; renderCurrent(); },
         'del-note'(t) { S.notes = S.notes.filter(n => n.id !== t.dataset.id); save('notes'); renderCurrent(); },
         'plan-filter'(t) { ui.planFilter = t.dataset.f; renderCurrent(); },
         toggle(t) {
@@ -925,6 +906,7 @@
         const el = e.target;
         const fe = el.closest && el.closest('form') && el.closest('form').querySelector('.form-err'); if (fe) fe.remove();
         if (el.id === 'srchInput') { runSearch(el.value); return; }
+        if (el.id === 'libSearch') { filterLib(el.value); return; }
         if (el.closest('#sgpaRows')) { sgpaRows()[+el.dataset.i][el.dataset.f] = el.value; save('sgpa'); calcSgpa(true); }
         if (el.closest('#tool-att')) calcWhatIf(true);
     });

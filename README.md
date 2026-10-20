@@ -8,7 +8,7 @@ A free, phone-first student planner built with plain HTML, CSS and JavaScript. N
 - **Class picker**: choose branch (CSE A/B, AI & ML, Data Science, ISE, ECE, EEE, Mechanical, Civil) and semester. Subjects, timetable, faculty, dates and the shared library follow your class. **Search** (top bar) finds subjects, notes, tasks, tools and classes.
 - **Home**: a "Today" sheet with your classes, your next class highlighted, tasks, exam countdown and quick links
 - **Study**: subjects, a day-by-day timetable, and notes (save Google Drive links per subject)
-- **Shared library** (Study > Shared): share Google Drive links with your class. Each upload gets a 6-digit PIN, and only that PIN can delete it. Needs the free Supabase setup below.
+- **Notes** (Study > Notes): upload Google Drive links with a typed subject name, shared with your class, and search them. Each upload gets a 6-digit PIN, and only that PIN can delete it. Needs the free Supabase setup below.
 - **Plan**: tasks with subject, priority and due date
 - **Tools**: SGPA calculator (VTU grade scale), attendance planner, exam countdown with your own dates, focus timer
 - **Me**: your name, USN, bio and picture, plus XP levels, daily challenges and 13 badges

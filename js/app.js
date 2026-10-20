@@ -80,16 +80,18 @@
         if (first && window.matchMedia('(pointer: fine)').matches) first.focus();
     }
     function openDev() { $('#devWrap').classList.add('open'); $('#devWrap').setAttribute('aria-hidden', 'false'); document.body.classList.add('lock'); }
-    function closeDev() { const w = $('#devWrap'); if (!w.classList.contains('open')) return; $('#lofi').pause(); w.classList.remove('open'); w.setAttribute('aria-hidden', 'true'); document.body.classList.remove('lock'); }
+    function closeDev() { const w = $('#devWrap'); if (!w.classList.contains('open')) return; $('#lofi').pause(); $('#pcard').hidden = true; w.classList.remove('open'); w.setAttribute('aria-hidden', 'true'); document.body.classList.remove('lock'); }
     (function player() {
-        const a = $('#lofi'), btn = $('#musicBtn'), seek = $('#seek');
+        const a = $('#lofi'), btn = $('#musicBtn'), seek = $('#seek'), pb = $('#playBtn');
+        const PLAY = '<svg class="i" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>', PAUSE = '<svg class="i" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>';
         const fmt = t => isFinite(t) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '0:00';
         const sync = () => {
             const on = !a.paused;
             btn.classList.toggle('playing', on); btn.setAttribute('aria-pressed', on);
             $('#musicState').textContent = on ? 'Playing' : 'Paused';
-            btn.innerHTML = on ? '<svg class="i" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>' : '<svg class="i" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>';
+            pb.innerHTML = on ? PAUSE : PLAY;
         };
+        sync();
         a.addEventListener('play', sync); a.addEventListener('pause', sync);
         a.addEventListener('loadedmetadata', () => { $('#tAll').textContent = fmt(a.duration); });
         a.addEventListener('timeupdate', () => { $('#tNow').textContent = fmt(a.currentTime); if (a.duration) seek.value = a.currentTime / a.duration * 100; });
@@ -866,10 +868,12 @@
         't-reset'() { timerReset(); },
         't-skip'() { timerReset(T.mode === 'focus' ? 'short' : 'focus'); },
         music() {
-            const a = $('#lofi');
-            if (a.paused) a.play().catch(() => toast('Could not play the music.', 'err'));
-            else a.pause();
+            const c = $('#pcard'), a = $('#lofi');
+            if (c.hidden) { c.hidden = false; if (a.paused) a.play().catch(() => toast('Could not play the music.', 'err')); }
+            else c.hidden = true;
         },
+        'player-hide'() { $('#pcard').hidden = true; },
+        'play-toggle'() { const a = $('#lofi'); if (a.paused) a.play().catch(() => toast('Could not play the music.', 'err')); else a.pause(); },
         reset() {
             if (!confirm('Reset everything saved in this browser? Your tasks, notes, ratings and progress will be removed.')) return;
             try { Object.keys(localStorage).filter(k => k.indexOf(KEY) === 0).forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ }

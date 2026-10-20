@@ -410,12 +410,22 @@ body[data-view="plan"] .fab { display: flex; }
 .music-btn .i { width: 22px; height: 22px; stroke-width: 2.2; }
 .music-btn.playing { animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 11px rgba(255, 77, 109, .08), 0 8px 18px -6px rgba(232, 24, 74, .7); } }
-.player { margin: 0 auto 16px; padding: 12px 14px; border-radius: 18px; background: var(--brand-soft); text-align: left; }
-.player-top { display: flex; justify-content: space-between; align-items: baseline; }
-.player-top b { font-size: 14.5px; }
-.player-top small, .player-time { font-size: 12px; color: var(--ink-2); }
-.player-time { display: flex; justify-content: space-between; margin-top: 2px; }
-.player input[type=range] { width: 100%; margin: 8px 0 0; accent-color: #e8184a; }
+.pcard { position: absolute; z-index: 3; top: 66px; left: 14px; right: 14px; padding: 16px; border-radius: 22px; background: var(--card); text-align: left;
+    border: 1px solid var(--line); box-shadow: 0 22px 40px -14px rgba(20, 20, 50, .45); }
+.pcard[hidden] { display: none; }
+.pcard-x { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; color: var(--ink-2); font-size: 13px; }
+.pcard-top { display: flex; gap: 12px; align-items: center; padding-right: 22px; }
+.pcard-ico { width: 52px; height: 52px; border-radius: 50%; flex: none; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #ff4d6d, #e8184a); }
+.pcard-ico .i { width: 24px; height: 24px; stroke-width: 2.2; }
+.pcard-kicker { display: block; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #e8184a; }
+.pcard-top b { display: block; font-size: 17px; line-height: 1.2; }
+.pcard-top span:not(.pcard-ico) { font-size: 13px; color: var(--ink-2); }
+.pcard-seek { display: flex; align-items: center; gap: 8px; margin: 12px 0 4px; font-size: 12px; color: var(--ink-2); }
+.pcard-seek input { flex: 1; min-width: 0; accent-color: #e8184a; }
+.pcard-bot { display: flex; align-items: center; justify-content: space-between; }
+.pcard-bot b { font-size: 14px; color: var(--ink-2); }
+.pcard-play { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #ff4d6d, #e8184a); }
+.pcard-play .i { width: 20px; height: 20px; stroke-width: 3; }
 .dev-link { display: inline-flex; align-items: center; gap: 10px; padding: 12px 26px; border-radius: 999px; border: 1.5px solid var(--line, #e3e1f5); background: var(--card); color: var(--ink); font-weight: 700; text-decoration: none; }
 .dev-link .i { width: 20px; height: 20px; stroke-width: 2; color: #d6249f; }
 .dev-link:active { transform: scale(.97); }

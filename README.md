@@ -48,5 +48,5 @@ Built with ❤️ by Viresh R.
 
 ## Upvotes and install
 
-- **Upvotes:** run `supabase/upvotes.sql` once in the Supabase SQL Editor (after `setup.sql`). Notes then show an upvote button, one vote per device, and the most upvoted notes come first. Until you run it, everything else works and the button is hidden.
+- **Upvotes:** run `supabase/upvotes.sql` once in the Supabase SQL Editor (after `setup.sql`). Notes then show a heart (like) button, one vote per device, and the most liked notes come first. Until you run it, everything else works and the button is hidden.
 - **Install as an app:** `manifest.json`, `sw.js` and the icons in `images/` make ElevenNotes installable (Settings > Install app). It opens full screen and works offline for your timetable and tasks.

@@ -544,8 +544,9 @@ body[data-view="plan"] .fab { display: flex; }
 .music-btn.playing .i { animation: spin 4s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .pcard.playing .pcard-ico, .music-btn.playing .i { animation: none; } }
 
-.vote { display: inline-flex; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 999px; background: var(--brand-soft); color: var(--brand-ink); font-weight: 800; font-size: 14px; }
-.vote .i { width: 16px; height: 16px; stroke-width: 2.8; }
-.vote.on { background: var(--brand); color: #fff; }
-
-.steps { margin: 4px 0 12px; padding-left: 20px; display: grid; gap: 10px; }
+.vote { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; background: var(--brand-soft); color: var(--ink-2); font-weight: 800; font-size: 14px; }
+.vote .i { width: 20px; height: 20px; stroke-width: 2.2; fill: none; transition: transform .2s; }
+.vote.on { color: #ed4956; background: rgba(237, 73, 86, .12); }
+.vote.on .i { fill: #ed4956; stroke: #ed4956; animation: heartpop .35s ease; }
+@keyframes heartpop { 0% { transform: scale(.7); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .vote.on .i { animation: none; } }

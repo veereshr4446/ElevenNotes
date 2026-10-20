@@ -94,8 +94,8 @@
         sync();
         a.addEventListener('play', sync); a.addEventListener('pause', sync);
         a.addEventListener('loadedmetadata', () => { $('#tAll').textContent = fmt(a.duration); });
-        a.addEventListener('timeupdate', () => { $('#tNow').textContent = fmt(a.currentTime); if (a.duration) seek.value = a.currentTime / a.duration * 100; });
-        seek.addEventListener('input', () => { if (a.duration) a.currentTime = seek.value / 100 * a.duration; });
+        a.addEventListener('timeupdate', () => { $('#tNow').textContent = fmt(a.currentTime); if (a.duration) { seek.value = a.currentTime / a.duration * 100; seek.style.setProperty('--v', seek.value + '%'); } });
+        seek.addEventListener('input', () => { seek.style.setProperty('--v', seek.value + '%'); if (a.duration) a.currentTime = seek.value / 100 * a.duration; });
     })();
     function closeSheet() {
         if (sheetGuard && !sheetGuard()) return;

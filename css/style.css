@@ -396,38 +396,25 @@ body[data-view="plan"] .fab { display: flex; }
 .wa a { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #12643e; font-weight: 800; padding: 12px 22px; border-radius: 16px; text-decoration: none; }
 
 /* ---------- ABOUT ---------- */
-.dev { text-align: center; }
-.dev-photo { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: 4px auto 12px; border: 4px solid var(--brand-soft); }
-.dev h2 { font-size: 26px; }
-.dev-role { color: var(--brand-ink); font-weight: 700; margin: 2px 0 12px; }
-.dev p { max-width: 38ch; margin-inline: auto; }
-.music { display: inline-flex; align-items: center; gap: 12px; margin: 18px 0 10px; padding: 8px 18px 8px 10px; border-radius: 999px; background: var(--brand-soft); text-align: left; }
-.music-ico { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: var(--card); font-size: 20px; }
-.music.playing .music-ico { animation: bob 1.2s ease-in-out infinite; }
-@keyframes bob { 50% { transform: translateY(-4px) rotate(-8deg); } }
-.music b { display: block; font-size: 14.5px; line-height: 1.2; }
-.music small { font-size: 12.5px; color: var(--ink-2); }
-
-.insta {
-    --ig: linear-gradient(100deg, #feb047 0%, #f4623a 30%, #d6249f 65%, #7b3fe4 100%);
-    display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 12px;
-    padding: 9px 12px 9px 9px; border-radius: 24px; color: var(--ink); text-decoration: none; text-align: left; min-height: 66px;
-    border: 2px solid transparent;
-    background: linear-gradient(var(--card), var(--card)) padding-box, var(--ig) border-box;
-    box-shadow: 0 14px 26px -18px rgba(214, 36, 159, .8);
-    transition: transform .2s, box-shadow .2s;
-}
-.insta:hover { transform: translateY(-2px); box-shadow: 0 18px 30px -16px rgba(214, 36, 159, .85); }
-.insta:active { transform: scale(.985); }
-.insta .i { width: 22px; height: 22px; stroke-width: 2; }
-.insta-ico, .insta-go { display: grid; place-items: center; flex: none; color: #fff; background: var(--ig); }
-.insta-ico { width: 46px; height: 46px; border-radius: 16px; }
-.insta-ico .i { width: 25px; height: 25px; }
-.insta-go { width: 34px; height: 34px; border-radius: 50%; transition: transform .2s; }
-.insta:hover .insta-go { transform: translateX(3px); }
-.insta-text { flex: 1; min-width: 0; }
-.insta-text b { display: block; font-family: var(--font-head); font-size: 16.5px; font-weight: 800; line-height: 1.2; white-space: nowrap; }
-.insta-text small { display: block; margin-top: 2px; font-size: 13px; color: var(--ink-2); }
+.dev-wrap { position: fixed; inset: 0; z-index: 70; display: none; align-items: center; justify-content: center; padding: 16px; }
+.dev-wrap.open { display: flex; }
+.dev-wrap .backdrop { position: absolute; inset: 0; background: rgba(20, 20, 50, .45); backdrop-filter: blur(6px); }
+.dev-card { position: relative; width: 100%; max-width: 380px; max-height: 92vh; overflow-y: auto; background: var(--card); border-radius: 28px; padding: 56px 22px 22px; text-align: center; box-shadow: 0 30px 60px -20px rgba(20, 20, 50, .5); }
+.dev-card .dev-photo { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px; border: 4px solid var(--brand-soft); display: block; }
+.dev-card h2 { font-size: 24px; margin: 0; }
+.dev-card .dev-role { color: var(--brand-ink); font-weight: 700; margin: 2px 0 12px; }
+.dev-bio { color: var(--ink-2); margin: 0 auto 16px; max-width: 32ch; }
+.dev-x { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; color: var(--ink-2); font-size: 16px; }
+.music-btn { position: absolute; top: 12px; left: 12px; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, #ff4d6d, #e8184a); box-shadow: 0 0 0 6px rgba(255, 77, 109, .18), 0 8px 18px -6px rgba(232, 24, 74, .7); }
+.music-btn .i { width: 22px; height: 22px; stroke-width: 2.2; }
+.music-btn.playing { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 11px rgba(255, 77, 109, .08), 0 8px 18px -6px rgba(232, 24, 74, .7); } }
+.music-cap { position: absolute; top: 62px; left: 8px; font-size: 11px; color: var(--ink-2); max-width: 90px; line-height: 1.2; text-align: left; }
+.dev-link { display: inline-flex; align-items: center; gap: 10px; padding: 12px 26px; border-radius: 999px; border: 1.5px solid var(--line, #e3e1f5); background: var(--card); color: var(--ink); font-weight: 700; text-decoration: none; }
+.dev-link .i { width: 20px; height: 20px; stroke-width: 2; color: #d6249f; }
+.dev-link:active { transform: scale(.97); }
+.dev-card .fine { margin-top: 16px; }
 
 /* ---------- SHEET, TOAST ---------- */
 .sheet-wrap { position: fixed; inset: 0; z-index: 60; display: none; }

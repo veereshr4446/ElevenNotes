@@ -79,6 +79,8 @@
         const first = $('#sheetBody input, #sheetBody textarea, #sheetBody select');
         if (first && window.matchMedia('(pointer: fine)').matches) first.focus();
     }
+    function openDev() { $('#devWrap').classList.add('open'); $('#devWrap').setAttribute('aria-hidden', 'false'); document.body.classList.add('lock'); }
+    function closeDev() { const w = $('#devWrap'); if (!w.classList.contains('open')) return; w.classList.remove('open'); w.setAttribute('aria-hidden', 'true'); document.body.classList.remove('lock'); }
     function closeSheet() {
         if (sheetGuard && !sheetGuard()) return;
         sheetGuard = null;
@@ -386,7 +388,7 @@
          ['🎉', 'Events', 'College fests and activities. Coming soon', () => go('events'), 'fest'],
          ['💬', 'Community', 'Join the community', () => go('community')],
          ['👤', 'Profile and settings', 'Your profile, class, dark mode', () => go('me'), 'streak profile settings theme'],
-         ['👨‍💻', 'About the developer', 'Meet Viresh', () => go('about')]
+         ['👨‍💻', 'About the developer', 'Meet Viresh', () => openDev()]
         ].forEach(a => add(a[0], a[1], a[2], a[3], a[4]));
         return out;
     }
@@ -516,8 +518,8 @@
     // ============================================================
     //  ROUTER
     // ============================================================
-    const PAGES = ['home', 'study', 'plan', 'tools', 'me', 'faculty', 'events', 'community', 'about'];
-    const NAV_OF = { faculty: 'home', events: 'home', community: 'home', about: 'me' };
+    const PAGES = ['home', 'study', 'plan', 'tools', 'me', 'faculty', 'events', 'community'];
+    const NAV_OF = { faculty: 'home', events: 'home', community: 'home' };
     let current = 'home';
 
     let routedHash = null;
@@ -775,7 +777,8 @@
             const sw = $('#sheetBody .switch'); if (sw) sw.classList.toggle('on', next === 'dark');
         },
         settings: settingsSheet,
-        'about-dev'() { closeSheet(); go('about'); },
+        'about-dev'() { closeSheet(); openDev(); },
+        'close-dev': closeDev,
         pro: proSheet, feedback: feedbackSheet, avatar: avatarSheet, 'edit-profile': profileSheet,
         'close-sheet': closeSheet,
         back() { if (history.length > 1) history.back(); else go('home'); },
@@ -883,7 +886,7 @@
         if (el.closest('#sgpaRows')) { sgpaRows()[+el.dataset.i][el.dataset.f] = el.value; save('sgpa'); calcSgpa(true); }
         if (el.closest('#tool-att')) calcWhatIf(true);
     });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSheet(); closeDev(); } });
     window.addEventListener('hashchange', () => { if (location.hash !== routedHash) route(); });
 
     // ============================================================

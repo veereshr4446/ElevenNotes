@@ -166,30 +166,26 @@
     <section class="page" id="page-community" data-page="community"></section>
 
     <!-- ABOUT DEVELOPER -->
-    <section class="page" id="page-about" data-page="about">
-        <div class="subhead"><button class="icon-btn" data-act="back" aria-label="Go back"><svg class="i" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1>About the developer</h1></div>
-        <div class="sheet-paper dev">
-            <img class="dev-photo" src="images/profile.jpg" alt="Viresh Ranjanagi" />
-            <h2>Viresh Ranjanagi</h2>
-            <p class="dev-role">Founder of ElevenNotes</p>
-            <p>Passionate about coding. Turning ideas into systems and building solutions for real-world problems, one line of code at a time.</p>
-
-            <button class="music" id="musicBtn" data-act="music" aria-pressed="false">
-                <span class="music-ico" aria-hidden="true">🎧</span>
-                <span><b>Lofi focus</b><small id="musicState">Tap to play</small></span>
-            </button>
-
-            <a class="insta" href="https://www.instagram.com/__veeresh__r" target="_blank" rel="noopener noreferrer" aria-label="Follow on Instagram, opens in a new tab">
-                <span class="insta-ico"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".9" fill="currentColor" stroke="none"/></svg></span>
-                <span class="insta-text"><b>Follow on Instagram</b><small>Say hi and stay connected</small></span>
-                <span class="insta-go" aria-hidden="true"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-            </a>
-
-            <p class="fine">ElevenNotes is an independent student project. It is not an official app of any college.</p>
-        </div>
-        <audio id="lofi" src="audio/lofi-focus.mp3" preload="none" loop></audio>
-    </section>
 </main>
+
+<!-- ===== ABOUT DEVELOPER POPUP ===== -->
+<div class="dev-wrap" id="devWrap" aria-hidden="true">
+    <div class="backdrop" data-act="close-dev"></div>
+    <div class="dev-card" role="dialog" aria-modal="true" aria-label="About the developer">
+        <button class="music-btn" id="musicBtn" data-act="music" aria-pressed="false" aria-label="Play lofi music">
+            <svg class="i" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>
+        </button>
+        <small class="music-cap" id="musicState">Tap to play</small>
+        <button class="dev-x" data-act="close-dev" aria-label="Close">✕</button>
+        <img class="dev-photo" src="images/profile.jpg" alt="Viresh Ranjanagi" />
+        <h2>Viresh Ranjanagi</h2>
+        <p class="dev-role">Founder of ElevenNotes</p>
+        <p class="dev-bio">Passionate about coding. Turning ideas into systems and building solutions for real-world problems, one line of code at a time.</p>
+        <a class="dev-link" href="https://www.instagram.com/__veeresh__r" target="_blank" rel="noopener noreferrer"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".9" fill="currentColor" stroke="none"/></svg>Instagram</a>
+        <p class="fine">ElevenNotes is an independent student project. It is not an official app of any college.</p>
+        <audio id="lofi" src="audio/lofi-focus.mp3" preload="none" loop></audio>
+    </div>
+</div>
 
 <!-- ===== BOTTOM SHEET ===== -->
 <div class="sheet-wrap" id="sheetWrap" aria-hidden="true">

@@ -451,7 +451,7 @@
     }
     R.me = function () {
         const p = S.profile, s = derived(), d = today();
-        const ringPct = Math.round(CHALLENGES.reduce((n, c) => n + Math.min(c.val(d), c.goal) / c.goal, 0) / CHALLENGES.length * 100);
+        const ringPct = 20 + Math.round(CHALLENGES.reduce((n, c) => n + Math.min(c.val(d), c.goal) / c.goal, 0) / CHALLENGES.length * 80);
         const pend = S.tasks.filter(t => !t.done).sort((x, y) => (x.date || '9').localeCompare(y.date || '9'));
         $('#page-me').innerHTML = `
             <div class="me-top"><h1>Profile</h1><button class="icon-btn" data-act="settings" aria-label="Settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>

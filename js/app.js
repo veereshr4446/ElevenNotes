@@ -450,7 +450,8 @@
         </div>`);
     }
     R.me = function () {
-        const p = S.profile, s = derived();
+        const p = S.profile, s = derived(), d = today();
+        const pend = S.tasks.filter(t => !t.done).sort((x, y) => (x.date || '9').localeCompare(y.date || '9'));
         $('#page-me').innerHTML = `
             <div class="me-top"><h1>Profile</h1><button class="icon-btn" data-act="settings" aria-label="Settings"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
             <div class="me-head">
@@ -465,7 +466,20 @@
                 <div><b>${s.tasksDone}</b><span>tasks done</span></div>
                 <div><b>${s.focusMinutes}</b><span>focus min</span></div>
                 <div><b>${s.notesAdded}</b><span>notes shared</span></div>
-            </div>`;
+            </div>
+
+            <h2 class="sec-title">My class</h2>
+            <div class="flat"><button data-act="pick-class"><span class="em">🎓</span><span class="grow"><b>${esc(clsLabel())}</b><span>Tap to change branch or semester</span></span><span class="go">›</span></button></div>
+
+            <h2 class="sec-title">Today's goals</h2>
+            <div class="flat">${CHALLENGES.map(c => {
+                const v = Math.min(c.val(d), c.goal), done = v >= c.goal;
+                return `<div class="challenge ${done ? 'done' : ''}"><span class="em">${done ? '✅' : c.icon}</span><div class="grow"><b>${c.text}</b><div class="bar"><i style="width:${v / c.goal * 100}%"></i></div></div><span class="xp">${done ? 'Done' : v + '/' + c.goal}</span></div>`;
+            }).join('')}</div>
+
+            <h2 class="sec-title">Pending tasks</h2>
+            ${pend.length ? `<div class="flat">${pend.slice(0, 3).map(t => `<button data-act="nav" data-to="plan"><span class="em">📋</span><span class="grow"><b>${esc(t.title)}</b><span>${t.date ? esc(dueInfo(t.date).text) : 'No due date'}</span></span><span class="go">›</span></button>`).join('')}</div>`
+                : `<div class="sheet-paper empty"><b>Nothing pending</b>Add a task in the Plan tab.</div>`}`;
     };
 
     // ---------- FACULTY ----------

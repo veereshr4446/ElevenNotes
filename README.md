@@ -4,6 +4,8 @@
 
 A free, phone-first student planner built with plain HTML, CSS and JavaScript. No login, no server, no build step.
 
+Created by Viresh R. (RYMEC Ballari). The idea, design decisions, timetable data and testing are mine; the code was written with the help of Claude, an AI assistant from Anthropic.
+
 ## What is inside
 - **Class picker**: choose branch (CSE A/B, AI & ML, Data Science, ISE, ECE, EEE, Mechanical, Civil) and semester. Subjects, timetable, faculty, dates and the shared library follow your class. **Search** (top bar) finds subjects, notes, tasks, tools and classes.
 - **Home**: a "Today" sheet with your classes, your next class highlighted, tasks, exam countdown and quick links

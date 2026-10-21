@@ -17,7 +17,7 @@ language sql security definer set search_path = public as $$
     on conflict (device) do update set last_seen = now();
 $$;
 
--- Public numbers for the About popup and the README.
+-- Private numbers: only you can read them (SQL Editor). The website cannot call this.
 create or replace function public.get_stats()
 returns jsonb
 language sql security definer set search_path = public as $$
@@ -30,5 +30,5 @@ language sql security definer set search_path = public as $$
     );
 $$;
 
-revoke all on function public.ping_device(text), public.get_stats() from public;
-grant execute on function public.ping_device(text), public.get_stats() to anon, authenticated;
+revoke all on function public.ping_device(text), public.get_stats() from public, anon, authenticated;
+grant execute on function public.ping_device(text) to anon, authenticated;   -- the app may only say hello, never read the numbers

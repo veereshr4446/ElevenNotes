@@ -79,7 +79,23 @@
         const first = $('#sheetBody input, #sheetBody textarea, #sheetBody select');
         if (first && window.matchMedia('(pointer: fine)').matches) first.focus();
     }
-    function openDev() { $('#devWrap').classList.add('open'); $('#devWrap').setAttribute('aria-hidden', 'false'); document.body.classList.add('lock'); }
+    // ---------- anonymous usage numbers (needs supabase/stats.sql) ----------
+    function pingDevice() {
+        if (!libOn()) return;
+        const today = dkey();
+        if (get('pinged', '') === today) return;
+        rpc('ping_device', { p_device: voterId() }).then(() => set('pinged', today)).catch(() => {});
+    }
+    async function loadStats() {
+        const el = $('#devStats'); if (!el || !libOn()) return;
+        try {
+            const d = await rpc('get_stats', {});
+            if (!d) return;
+            el.innerHTML = `<div><b>${d.students}</b><span>students</span></div><div><b>${d.notes}</b><span>notes</span></div><div><b>${d.likes}</b><span>likes</span></div>`;
+            el.hidden = false;
+        } catch (e) { el.hidden = true; }
+    }
+    function openDev() { loadStats(); $('#devWrap').classList.add('open'); $('#devWrap').setAttribute('aria-hidden', 'false'); document.body.classList.add('lock'); }
     function closeDev() { const w = $('#devWrap'); if (!w.classList.contains('open')) return; $('#lofi').pause(); $('#pcard').hidden = true; w.classList.remove('open'); w.setAttribute('aria-hidden', 'true'); document.body.classList.remove('lock'); }
     (function player() {
         const a = $('#lofi'), btn = $('#musicBtn'), seek = $('#seek'), pb = $('#playBtn');
@@ -956,6 +972,7 @@
     setInterval(tickCountdown, 1000);
     setInterval(() => { if (current === 'home') R.home(); }, 60000);
     route();
+    setTimeout(pingDevice, 1500);
     checkProgress();
     if (!get('classAsked', false)) setTimeout(() => { set('classAsked', true); pickerSheet(); }, 500);
 })();

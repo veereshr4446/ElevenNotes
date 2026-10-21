@@ -52,3 +52,4 @@ Built with ❤️ by Viresh R.
 
 - **Upvotes:** run `supabase/upvotes.sql` once in the Supabase SQL Editor (after `setup.sql`). Notes then show a heart (like) button, one vote per device, and the most liked notes come first. Until you run it, everything else works and the button is hidden.
 - **Install as an app:** `manifest.json`, `sw.js` and the icons in `images/` make ElevenNotes installable (Settings > Install app). It opens full screen and works offline for your timetable and tasks.
+- **Usage numbers:** run `supabase/stats.sql` once. The About popup then shows students (anonymous devices), notes and likes. To see more numbers for this README, run `select get_stats();` in the Supabase SQL Editor.

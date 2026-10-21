@@ -399,37 +399,38 @@ body[data-view="plan"] .fab { display: flex; }
 .dev-wrap { position: fixed; inset: 0; z-index: 70; display: none; align-items: center; justify-content: center; padding: 16px; }
 .dev-wrap.open { display: flex; }
 .dev-wrap .backdrop { position: absolute; inset: 0; background: rgba(20, 20, 50, .45); backdrop-filter: blur(6px); }
-.dev-card { position: relative; width: 100%; max-width: 380px; max-height: 92vh; overflow-y: auto; background: var(--card); border-radius: 28px; padding: 56px 22px 22px; text-align: center; box-shadow: 0 30px 60px -20px rgba(20, 20, 50, .5); }
+.dev-card { position: relative; width: 100%; max-width: 340px; max-height: 92vh; overflow-y: auto; background: var(--card); border-radius: 28px; padding: 56px 22px 22px; text-align: center; box-shadow: 0 30px 60px -20px rgba(20, 20, 50, .5); }
 .dev-card .dev-photo { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px; border: 4px solid var(--brand-soft); display: block; }
 .dev-card h2 { font-size: 24px; margin: 0; }
 .dev-card .dev-role { color: var(--brand-ink); font-weight: 700; margin: 2px 0 12px; }
 .dev-bio { color: var(--ink-2); margin: 0 auto 16px; max-width: 32ch; }
 .dev-x { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; color: var(--ink-2); font-size: 16px; }
-.music-btn { position: absolute; top: 16px; left: 16px; width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; color: #fff;
-    background: linear-gradient(135deg, #ff4d6d, #e8184a); box-shadow: 0 0 0 7px rgba(255, 77, 109, .2), 0 10px 20px -6px rgba(232, 24, 74, .6); }
-.music-btn .i, .pcard-ico .i { width: 26px; height: 26px; stroke-width: 2.2; fill: none; stroke: #fff; }
+.music-btn { position: absolute; top: 16px; left: 18px; z-index: 5; width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff;
+    background: linear-gradient(135deg, #FF375F 0%, #FF2D55 50%, #FA233B 100%);
+    box-shadow: 0 0 0 6px rgba(255, 45, 85, .10), 0 4px 14px rgba(255, 45, 85, .35); transition: transform .2s ease, box-shadow .2s ease; }
+.music-btn:active { transform: scale(1.06); }
+.music-btn .i, .pcard-ico .i { width: 20px; height: 20px; stroke-width: 2.2; fill: none; stroke: #fff; }
 .music-btn .hd, .pcard-ico .hd { fill: #fff; }
-.music-btn.playing { animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 11px rgba(255, 77, 109, .08), 0 8px 18px -6px rgba(232, 24, 74, .7); } }
-.pcard { position: absolute; z-index: 3; top: 72px; left: 16px; width: 250px; max-width: calc(100% - 32px); padding: 14px 14px 12px; border-radius: 24px; background: var(--card); text-align: left;
-    border: 1px solid var(--line); box-shadow: 0 18px 36px -12px rgba(20, 20, 50, .4); }
+.pcard { position: absolute; z-index: 6; top: 70px; left: 18px; width: 250px; max-width: calc(100% - 36px); padding: 14px; border-radius: 16px; background: var(--card); text-align: left;
+    border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(0, 0, 0, .18); animation: fadeUp .2s ease; }
+.pcard { line-height: 1.3; }
 .pcard[hidden] { display: none; }
-.pcard-x { position: absolute; top: 8px; right: 10px; width: 26px; height: 26px; border-radius: 50%; color: var(--ink-2); font-size: 12px; }
-.pcard-top { display: flex; gap: 10px; align-items: center; }
-.pcard-ico { width: 44px; height: 44px; border-radius: 50%; flex: none; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #ff4d6d, #e8184a); }
-.pcard-ico .i { width: 24px; height: 24px; }
-.pcard-kicker { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; color: #e8184a; }
-.pcard-top b { display: block; font-size: 17px; line-height: 1.15; }
-.pcard-top span:not(.pcard-ico) { font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
-.pcard-seek { display: flex; align-items: center; gap: 8px; margin: 10px 0 2px; font-size: 11.5px; color: var(--ink-2); }
-.pcard-seek input { flex: 1; min-width: 0; -webkit-appearance: none; appearance: none; height: 8px; border-radius: 99px; border: 1px solid #c9c9d4; --v: 0%;
-    background: linear-gradient(90deg, #ff4d6d var(--v), #ececf2 var(--v)); }
-.pcard-seek input::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #ff3b5c; border: 0; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
-.pcard-seek input::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #ff3b5c; border: 0; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.pcard-x { position: absolute; top: 4px; right: 6px; width: 28px; height: 28px; color: var(--ink-2); font-size: 14px; }
+.pcard-top { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+.pcard-ico { width: 40px; height: 40px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #FF375F 0%, #FF2D55 50%, #FA233B 100%); }
+.pcard-ico .i { width: 18px; height: 18px; }
+.pcard-kicker { display: block; font-size: 9px; font-weight: 800; letter-spacing: .06em; color: #FF2D55; }
+.pcard-top b { display: block; font-size: 13px; line-height: 1.3; }
+.pcard-top span:not(.pcard-ico) { display: block; font-size: 10.5px; color: var(--ink-2); }
+.pcard-seek { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 10px; color: var(--ink-2); }
+.pcard-seek input { flex: 1; min-width: 0; margin: 0; height: 18px; accent-color: #FF2D55; cursor: pointer; }
 .pcard-bot { display: flex; align-items: center; justify-content: space-between; }
-.pcard-bot b { font-size: 13px; color: var(--ink-2); }
-.pcard-play { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #ff4d6d, #e8184a); }
-.pcard-play .i { width: 18px; height: 18px; stroke-width: 3.5; stroke: #fff; fill: #fff; }
+.pcard-bot b { font-size: 11px; color: var(--ink-2); font-weight: 600; }
+.pcard-play { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(135deg, #FF375F 0%, #FF2D55 50%, #FA233B 100%); transition: transform .15s; }
+.pcard-play:active { transform: scale(1.08); }
+.pcard-play .i { width: 15px; height: 15px; stroke-width: 3.2; stroke: #fff; fill: #fff; }
 .dev-link { display: inline-flex; align-items: center; gap: 10px; padding: 12px 26px; border-radius: 999px; border: 1.5px solid var(--line, #e3e1f5); background: var(--card); color: var(--ink); font-weight: 700; text-decoration: none; }
 .dev-link .i { width: 20px; height: 20px; stroke-width: 2; color: #d6249f; }
 .dev-link:active { transform: scale(.97); }
@@ -543,9 +544,8 @@ body[data-view="plan"] .fab { display: flex; }
     *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-.pcard.playing .pcard-ico { animation: spin 4s linear infinite; }
-@media (prefers-reduced-motion: reduce) { .pcard.playing .pcard-ico, .music-btn.playing .i { animation: none; } }
+@keyframes spinDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.pcard.playing .pcard-ico, .music-btn.playing .i { animation: spinDisc 3s linear infinite; }
 
 .vote { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; background: var(--brand-soft); color: var(--ink-2); font-weight: 800; font-size: 14px; }
 .vote .i { width: 20px; height: 20px; stroke-width: 2.2; fill: none; transition: transform .2s; }
@@ -560,3 +560,5 @@ body[data-view="plan"] .fab { display: flex; }
 .install-main b { display: block; font-size: 15px; color: var(--brand-ink); }
 .install-main span.grow > span { font-size: 12.5px; color: var(--ink-2); }
 .install-x { width: 40px; height: 40px; margin-right: 6px; border-radius: 50%; color: var(--ink-2); font-size: 14px; flex: none; }
+/* The music icons keep spinning even with "reduce motion" on, because the spin is the play indicator. */
+.pcard.playing .pcard-ico, .music-btn.playing .i { animation: spinDisc 3s linear infinite !important; }

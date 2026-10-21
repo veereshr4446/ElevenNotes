@@ -17,9 +17,10 @@ Created by Viresh R. (RYMEC Ballari). The idea, design decisions, timetable data
 - **Faculty** ratings, **Events** (coming soon), **Community** link, dark mode
 
 ## Privacy
-- Everything you enter is saved only in your own browser (LocalStorage). Nothing is sent anywhere.
+- Your tasks, profile, class choice and settings are saved only in your own browser (LocalStorage). They are never sent anywhere.
+- Only two things go to the online database (Supabase): notes you choose to share (title, subject, Drive link, the name you type, and a hashed delete PIN), and a random anonymous device ID used for likes and a private daily usage count. No logins, emails or personal data are collected.
 - ElevenNotes is **not connected to any college system or third-party portal** and does not read attendance or marks.
-- Timetables are added class by class (CSE A, Semester 3 so far). Always check your official college timetable too. Add a class in `CLASS_DATA` in `js/data.js`.
+- Timetables are added class by class from the official college timetables. Always check your official college timetable too. To add a class, edit `CLASS_DATA` in `js/data.js`.
 
 ## Switching on the Shared library
 1. Create a free project at supabase.com.
